@@ -2,14 +2,59 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;min-height:100vh;padding:20px;
+ display:flex;align-items:center;justify-content:center;
+ background:linear-gradient(135deg,#e5f5e9,#c7e8d5);
+ font-family:Arial,sans-serif
+}
+.box{
+ width:100%;max-width:420px;background:white;
+ padding:30px;border-radius:18px;
+ box-shadow:0 8px 30px #0002;text-align:center
+}
+.logo{font-size:48px}
+h2{color:#12633c}
+p{color:#666}
+label{display:block;text-align:left;margin:16px 0 7px}
+input,select{
+ width:100%;padding:13px;border:1px solid #ccc;
+ border-radius:8px;font-size:16px
+}
+button{
+ width:100%;padding:14px;margin-top:22px;
+ background:#12633c;color:white;border:0;
+ border-radius:8px;font-size:17px;cursor:pointer
+}
+small{display:block;margin-top:20px;color:#777}
+</style>
 </head>
 <body>
-  <h1>আল ক্বাসিম ইসলামি যুব সংঘ</h1>
-  <h2>সংগঠনের হিসাব ব্যবস্থাপনা</h2>
-  <p>আমাদের ডিজিটাল হিসাব ব্যবস্থায় স্বাগতম।</p>
-  <p>সদস্য, মাসিক চাঁদা, আয়-ব্যয় ও রসিদের হিসাব এখানে পরিচালনা করা হবে।</p>
+<div class="box">
+ <div class="logo">🕌</div>
+ <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
+ <p>ডিজিটাল হিসাব ব্যবস্থাপনা</p>
+ <form>
+  <label>লগইনের ধরন</label>
+  <select required>
+   <option value="">নির্বাচন করুন</option>
+   <option>Super Admin</option>
+   <option>সংগঠনের অ্যাডমিন</option>
+   <option>সদস্য</option>
+  </select>
+  <label>ইমেইল ঠিকানা</label>
+  <input type="email" placeholder="ইমেইল লিখুন" required>
+  <label>পাসওয়ার্ড</label>
+  <input type="password" placeholder="পাসওয়ার্ড লিখুন" required>
+  <button type="submit">লগইন করুন</button>
+ </form>
+ <small>© আল ক্বাসিম ইসলামি যুব সংঘ</small>
+</div>
 </body>
 </html>
+
