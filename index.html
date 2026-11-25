@@ -2,6 +2,114 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>আল ক্বাসিম ইসলামি যুব সংঘ - লগইন</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #eef5f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .login {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 320px;
+      box-shadow: 0 4px 15px #0002;
+      text-align: center;
+    }
+    h2 { color: #087443; }
+    input, button, select {
+      box-sizing: border-box;
+      width: 100%;
+      padding: 12px;
+      margin: 9px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+    button {
+      background: #087443;
+      color: white;
+      border: 0;
+      cursor: pointer;
+    }
+    #message { color: #b00020; }
+  </style>
+</head>
+<body>
+  <div class="login">
+    <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
+    <p>হিসাব ব্যবস্থাপনা লগইন</p>
+
+    <select id="role">
+      <option value="super_admin">সুপার অ্যাডমিন</option>
+      <option value="org_admin">সংগঠন অ্যাডমিন</option>
+      <option value="member">সদস্য</option>
+    </select>
+
+    <input id="email" type="email" placeholder="ইমেইল লিখুন">
+    <input id="password" type="password" placeholder="পাসওয়ার্ড লিখুন">
+
+    <button id="loginBtn">লগইন করুন</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://qkwbzlpccuuzygqbacuk.supabase.co/rest/v1/";
+    const SUPABASE_KEY = "sb_publishable_DyOTkY2CxMM-iqdW94ehnw_RB8vqB8_";
+
+    const db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const selectedRole = document.getElementById("role").value;
+      const message = document.getElementById("message");
+
+      message.textContent = "লগইন হচ্ছে...";
+
+      const { data, error } = await db.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        message.textContent = "লগইন হয়নি: " + error.message;
+        return;
+      }
+
+      const { data: profile, error: profileError } = await db
+        .from("profiles")
+        .select("role")
+        .eq("id", data.user.id)
+        .single();
+
+      if (profileError || !profile || profile.role !== selectedRole) {
+        await db.auth.signOut();
+        message.textContent = "আপনার অ্যাকাউন্টের ধরন সঠিক নয়।";
+        return;
+      }
+
+      message.style.color = "green";
+      message.textContent = "লগইন সফল হয়েছে!";
+    });
+  </script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
