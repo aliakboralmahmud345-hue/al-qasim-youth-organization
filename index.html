@@ -73,6 +73,30 @@ body *{visibility:hidden}
 </div>
 </div>
 
+
+<div class="card">
+  <h2>আয়-ব্যয়ের হিসাব</h2>
+  <form id="transactionForm">
+    <label>হিসাবের ধরন</label>
+    <select id="transactionType" required>
+      <option value="income">আয়</option>
+      <option value="expense">ব্যয়</option>
+    </select>
+
+    <label>টাকার পরিমাণ</label>
+    <input id="transactionAmount" type="number" min="1" required placeholder="টাকার পরিমাণ">
+
+    <label>বিবরণ</label>
+    <input id="transactionDescription" required placeholder="কী বাবদ আয় বা খরচ">
+
+    <label>তারিখ</label>
+    <input id="transactionDate" type="date" required>
+
+    <button type="submit">হিসাব সংরক্ষণ করুন</button>
+  </form>
+  <div id="transactionMessage" class="message"></div>
+  <div id="transactionList"></div>
+</div>
 <div class="card">
 <h2>নতুন সদস্য যোগ করুন</h2>
 <form id="memberForm">
@@ -620,6 +644,73 @@ async function loadSummary(){
   el("expense").textContent="৳ "+expense.toLocaleString("bn-BD");
 }
 
+
+// আয়-ব্যয়ের হিসাব সংরক্ষণ
+el("transactionForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const transaction = {
+    organization_id: organizationId,
+    type: el("transactionType").value,
+    amount: Number(el("transactionAmount").value),
+    description: el("transactionDescription").value.trim(),
+    transaction_date: el("transactionDate").value
+  };
+
+  const { error } = await db.from("transactions").insert(transaction);
+
+  if (error) {
+    msg("transactionMessage", "হিসাব সংরক্ষণ হয়নি: " + error.message);
+    return;
+  }
+
+  msg("transactionMessage", "হিসাব সফলভাবে সংরক্ষণ হয়েছে।", false);
+
+  el("transactionForm").reset();
+
+  await loadTransactions();
+  await loadSummary();
+});await loadTransactions();
+
+// আয়-ব্যয়ের তালিকা দেখানো
+async function loadTransactions() {
+  const { data, error } = await db.from("transactions")
+    .select("id,type,amount,description,transaction_date")
+    .eq("organization_id", organizationId)
+    .order("transaction_date", { ascending: false });
+
+  const list = el("transactionList");
+  list.replaceChildren();
+
+  if (error) {
+    list.textContent = "হিসাব পাওয়া যায়নি: " + error.message;
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    list.textContent = "এখনো কোনো আয়-ব্যয়ের হিসাব নেই।";
+    return;
+  }
+
+  data.forEach(row => {
+    const item = document.createElement("div");
+    item.className = "item";
+
+    const title = document.createElement("strong");
+    title.textContent =
+      (row.type === "expense" ? "খরচ: " : "আয়: ") +
+      row.description;
+
+    const detail = document.createElement("div");
+    detail.className = "small";
+    detail.textContent =
+      "টাকা: ৳ " + Number(row.amount).toLocaleString("bn-BD") +
+      " | তারিখ: " + row.transaction_date;
+
+    item.append(title, detail);
+    list.appendChild(item);
+  });
+}
 el("logoutBtn").addEventListener("click",async()=>{
   await db.auth.signOut();
   currentUser=null;
