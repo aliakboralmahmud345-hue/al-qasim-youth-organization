@@ -255,7 +255,7 @@ async function loadProfile(user){
   el("reportMonth").value=monthString(new Date());
   el("transactionDate").value=new Date().toISOString().slice(0,10);
   el("paidDate").value=new Date().toISOString().slice(0,10);
-
+}
 async function login(){
   msg("message","লগইন হচ্ছে...",false);
 
@@ -334,7 +334,15 @@ async function loadMembers(){
   first.textContent="সদস্য নির্বাচন করুন";
   select.appendChild(first);
 
-  members.forEach(m=>{
+  
+  const select = el("duesMember");
+  select.replaceChildren();
+
+  const first = document.createElement("option");
+  first.value = "";
+  first.textContent = "সদস্য নির্বাচন করুন";
+  select.appendChild(first);
+
   const accountSelect = el("accountMember");
   accountSelect.replaceChildren();
 
@@ -344,19 +352,20 @@ async function loadMembers(){
   accountSelect.appendChild(accountFirst);
 
   members.forEach(m => {
-    const option = document.createElement("option");
-    option.value = m.id;
-    option.textContent = m.full_name;
-    accountSelect.appendChild(option);
+    const duesOption = document.createElement("option");
+    duesOption.value = m.id;
+    duesOption.textContent = m.full_name;
+    select.appendChild(duesOption);
+
+    const accountOption = document.createElement("option");
+    accountOption.value = m.id;
+    accountOption.textContent = m.full_name;
+    accountSelect.appendChild(accountOption);
   });
 
-    const option=document.createElement("option");
-    option.value=m.id;
-    option.textContent=m.full_name;
-    select.appendChild(option);
-  });
+  const list = el("memberList");
+  list.replaceChildren();
 
-  const list=el("memberList");
   list.replaceChildren();
 
   if(!members.length){
