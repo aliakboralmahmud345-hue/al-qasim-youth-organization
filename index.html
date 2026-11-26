@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
@@ -71,6 +70,7 @@ button{background:#087653;color:white;border:0;cursor:pointer}
 <div class="stat">মোট চাঁদা জমা<strong id="duesTotal">৳ ০</strong></div>
 <div class="stat">মোট চাঁদা বকেয়া<strong id="dueBalance">৳ ০</strong></div>
 <div class="stat">অন্যান্য আয়<strong id="income">৳ ০</strong></div>
+<div class="stat">মোট আয় (চাঁদা + অন্যান্য আয়)<strong id="totalIncome">৳ ০</strong></div>
 <div class="stat">মোট খরচ<strong id="expense">৳ ০</strong></div>
 <div class="stat">অবশিষ্ট টাকা<strong id="balance">৳ ০</strong></div>
 </div>
@@ -166,8 +166,7 @@ button{background:#087653;color:white;border:0;cursor:pointer}
 </section>
 </main>
 
-<script>
-const SUPABASE_URL = "https://tlwygxvvoxamilynhicf.supabase.co";
+<script>const SUPABASE_URL = "https://tlwygxvvoxamilynhicf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_sqPsAmbN1M-DcGNS3OOZLw_AYnnfkFv";
 const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
@@ -355,9 +354,7 @@ el("memberForm").addEventListener("submit",async event=>{
   el("memberForm").reset();
   await loadMembers();
   await loadMemberDueStatus();
-});
-
-el("duesForm").addEventListener("submit",async event=>{
+});el("duesForm").addEventListener("submit",async event=>{
   event.preventDefault();
 
   const month=el("paymentMonth").value;
@@ -597,6 +594,7 @@ el("transactionForm").addEventListener("submit",async event=>{
   await loadSummary();
 });
 
+// ড্যাশবোর্ডের মোট আয় ও অবশিষ্ট টাকার হিসাব
 async function loadSummary(){
   const duesTotal=allDues.reduce((sum,row)=>sum+Number(row.amount||0),0);
   el("duesTotal").textContent=money(duesTotal);
@@ -611,11 +609,13 @@ async function loadSummary(){
   });
 
   el("income").textContent=money(income);
-  el("expense").textContent=money(expense);
-  el("balance").textContent=money(duesTotal+income-expense);
-}
 
-function makeMonthlyReport(){
+  const totalIncome=duesTotal+income;
+  el("totalIncome").textContent=money(totalIncome);
+
+  el("expense").textContent=money(expense);
+  el("balance").textContent=money(totalIncome-expense);
+}function makeMonthlyReport(){
   const month=el("reportMonth").value;
   if(!month){
     el("monthlyReport").textContent="প্রথমে মাস নির্বাচন করুন।";
