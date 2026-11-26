@@ -4,49 +4,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>আল ক্বাসিম ইসলামি যুব সংঘ - লগইন</title>
+  <title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #eef5f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
+      background: #f1f5f9;
       margin: 0;
+      padding: 20px;
+      color: #1e293b;
     }
-    .login {
+    .container {
+      max-width: 650px;
+      margin: 30px auto;
       background: white;
-      padding: 30px;
+      padding: 25px;
       border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 4px 15px #0002;
-      text-align: center;
+      box-shadow: 0 3px 15px #0001;
     }
-    h2 { color: #087443; }
-    input, button, select {
-      box-sizing: border-box;
+    h2, h3 { text-align: center; color: #166534; }
+    input, select, button {
       width: 100%;
+      box-sizing: border-box;
       padding: 12px;
-      margin: 9px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
+      margin: 8px 0;
+      border: 1px solid #cbd5e1;
+      border-radius: 7px;
+      font-size: 16px;
     }
     button {
-      background: #087443;
+      background: #15803d;
       color: white;
       border: 0;
       cursor: pointer;
     }
-    #message { color: #b00020; }
+    button:hover { background: #166534; }
+    .link {
+      color: #2563eb;
+      cursor: pointer;
+      text-align: center;
+    }
+    .hidden { display: none; }
+    .message { text-align: center; margin: 12px 0; }
+    .card {
+      background: #f0fdf4;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+    }
+    .amount { font-size: 22px; font-weight: bold; }
+    .item {
+      padding: 10px;
+      border-bottom: 1px solid #e2e8f0;
+    }
   </style>
 </head>
 <body>
-  <div class="login">
-    <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
-    <p>হিসাব ব্যবস্থাপনা লগইন</p>
+
+<div class="container">
+  <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
+  <p style="text-align:center">হিসাব ব্যবস্থাপনা</p>
+
+  <div id="loginBox">
+    <h3>লগইন করুন</h3>
+    <input id="email" type="email" placeholder="আপনার ইমেইল">
+    <input id="password" type="password" placeholder="পাসওয়ার্ড">
 
     <select id="role">
       <option value="super_admin">সুপার অ্যাডমিন</option>
@@ -54,257 +76,113 @@
       <option value="member">সদস্য</option>
     </select>
 
-    <input id="email" type="email" placeholder="ইমেইল লিখুন">
-    <input id="password" type="password" placeholder="পাসওয়ার্ড লিখুন">
-
-    <button id="loginBtn">লগইন করুন</button>
-    <p id="message"></p>
+    <button id="loginBtn">লগইন</button>
+    <p class="link" id="forgotBtn">পাসওয়ার্ড ভুলে গেছেন?</p>
   </div>
 
-  <script>
-    const SUPABASE_URL = "https://qkwbzlpccuuzygqbacuk.supabase.co/rest/v1/";
-    const SUPABASE_KEY = "sb_publishable_DyOTkY2CxMM-iqdW94ehnw_RB8vqB8_";
+  <div id="forgotBox" class="hidden">
+    <h3>পাসওয়ার্ড রিসেট</h3>
+    <input id="resetEmail" type="email" placeholder="আপনার ইমেইল">
+    <button id="sendResetBtn">রিসেট লিংক পাঠান</button>
+    <p class="link" id="backBtn">লগইনে ফিরে যান</p>
+  </div>
 
-    const db = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
+  <div id="newPasswordBox" class="hidden">
+    <h3>নতুন পাসওয়ার্ড দিন</h3>
+    <input id="newPassword" type="password" placeholder="নতুন পাসওয়ার্ড">
+    <input id="confirmPassword" type="password" placeholder="আবার পাসওয়ার্ড দিন">
+    <button id="savePasswordBtn">পাসওয়ার্ড পরিবর্তন করুন</button>
+  </div>
 
-    document.getElementById("loginBtn").addEventListener("click", async () => {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value;
-      const selectedRole = document.getElementById("role").value;
-      const message = document.getElementById("message");
+  <div id="dashboard" class="hidden">
+    <h3>হিসাবের ড্যাশবোর্ড</h3>
+    <p id="welcome"></p>
 
-      message.textContent = "লগইন হচ্ছে...";
+    <div class="card">
+      মোট জমা
+      <div class="amount" id="totalIncome">৳ ০</div>
+    </div>
+    <div class="card">
+      মোট খরচ
+      <div class="amount" id="totalExpense">৳ ০</div>
+    </div>
+    <div class="card">
+      অবশিষ্ট টাকা
+      <div class="amount" id="balance">৳ ০</div>
+    </div>
 
-      const { data, error } = await db.auth.signInWithPassword({
-        email,
-        password
-      });
+    <h3>সদস্য সংখ্যা</h3>
+    <div class="card amount" id="memberCount">লোড হচ্ছে...</div>
 
-      if (error) {
-        message.textContent = "লগইন হয়নি: " + error.message;
-        return;
-      }
+    <h3>সাম্প্রতিক লেনদেন</h3>
+    <div id="transactionList">লোড হচ্ছে...</div>
 
-      const { data: profile, error: profileError } = await db
-        .from("profiles")
-        .select("role")
-        .eq("id", data.user.id)
-        .single();
+    <button id="logoutBtn">লগআউট</button>
+  </div>
 
-      if (profileError || !profile || profile.role !== selectedRole) {
-        await db.auth.signOut();
-        message.textContent = "আপনার অ্যাকাউন্টের ধরন সঠিক নয়।";
-        return;
-      }
-
-      message.style.color = "green";
-      message.textContent = "লগইন সফল হয়েছে!";
-    });
-  </script>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
-<style>
-*{box-sizing:border-box}
-body{
- margin:0;min-height:100vh;padding:20px;
- display:flex;align-items:center;justify-content:center;
- background:linear-gradient(135deg,#e5f5e9,#c7e8d5);
- font-family:Arial,sans-serif
-}
-.box{
- width:100%;max-width:420px;background:white;
- padding:30px;border-radius:18px;
- box-shadow:0 8px 30px #0002;text-align:center
-}
-.logo{font-size:48px}
-h2{color:#12633c}
-p{color:#666}
-label{display:block;text-align:left;margin:16px 0 7px}
-input,select{
- width:100%;padding:13px;border:1px solid #ccc;
- border-radius:8px;font-size:16px
-}
-button{
- width:100%;padding:14px;margin-top:22px;
- background:#12633c;color:white;border:0;
- border-radius:8px;font-size:17px;cursor:pointer
-}
-small{display:block;margin-top:20px;color:#777}
-</style>
-</head>
-<body>
-<div class="box">
- <div class="logo">🕌</div>
- <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
- <p>ডিজিটাল হিসাব ব্যবস্থাপনা</p>
- <form>
-  <label>লগইনের ধরন</label>
-  <select required>
-   <option value="">নির্বাচন করুন</option>
-   <option>Super Admin</option>
-   <option>সংগঠনের অ্যাডমিন</option>
-   <option>সদস্য</option>
-  </select>
-  <label>ইমেইল ঠিকানা</label>
-  <input type="email" placeholder="ইমেইল লিখুন" required>
-  <label>পাসওয়ার্ড</label>
-  <input type="password" placeholder="পাসওয়ার্ড লিখুন" required>
-  <button type="submit">লগইন করুন</button>
- </form>
- <small>© আল ক্বাসিম ইসলামি যুব সংঘ</small>
+  <p id="message" class="message"></p>
 </div>
-</body>
-</html>
-
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #eef5f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      width: 320px;
-      box-shadow: 0 4px 15px #0002;
-      text-align: center;
-    }
-    h2 { color: #087443; }
-    input, select, button {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      font-size: 15px;
-    }
-    button {
-      background: #087443;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-    .link {
-      color: #087443;
-      cursor: pointer;
-      text-decoration: underline;
-      font-size: 14px;
-    }
-    #message { font-size: 14px; }
-    .hidden { display: none; }
-  </style>
-</head>
-<body>
-  <div class="box">
-    <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
-    <p>হিসাব ব্যবস্থাপনা</p>
-
-    <div id="loginBox">
-      <h3>লগইন</h3>
-      <select id="role">
-        <option value="super_admin">সুপার অ্যাডমিন</option>
-        <option value="org_admin">সংগঠন অ্যাডমিন</option>
-        <option value="member">সদস্য</option>
-      </select>
-      <input id="email" type="email" placeholder="ইমেইল">
-      <input id="password" type="password" placeholder="পাসওয়ার্ড">
-      <button id="loginBtn">লগইন করুন</button>
-      <p class="link" id="forgotBtn">পাসওয়ার্ড ভুলে গেছেন?</p>
-    </div>
-
-    <div id="forgotBox" class="hidden">
-      <h3>পাসওয়ার্ড রিসেট</h3>
-      <input id="resetEmail" type="email" placeholder="আপনার ইমেইল">
-      <button id="sendResetBtn">রিসেট লিংক পাঠান</button>
-      <p class="link" id="backBtn">লগইনে ফিরে যান</p>
-    </div>
-
-    <div id="newPasswordBox" class="hidden">
-      <h3>নতুন পাসওয়ার্ড দিন</h3>
-      <input id="newPassword" type="password" placeholder="নতুন পাসওয়ার্ড">
-      <input id="confirmPassword" type="password" placeholder="আবার পাসওয়ার্ড লিখুন">
-      <button id="savePasswordBtn">পাসওয়ার্ড পরিবর্তন করুন</button>
-    </div>
-
-    <p id="message"></p>
-  </div>
 
 <script>
-  const SUPABASE_URL = "https://qkwbzlpccuuzygqbacuk.supabase.co/rest/v1/";
-  const SUPABASE_KEY = "sb_publishable_DyOTkY2CxMM-iqdW94ehnw_RB8vqB8_";
+  // এখানে আপনার আগের Supabase URL ও Publishable/Anon Key বসান
+  const SUPABASE_URL = "https://tlwygxvvoxamilynhicf.supabase.co/rest/v1/";
+  const SUPABASE_KEY = "sb_publishable_sqPsAmbN1M-DcGNS3OOZLw_AYnnfkFv";
 
   const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
 
-  const message = document.getElementById("message");
+  const $ = id => document.getElementById(id);
+  const message = $("message");
 
   function showBox(id) {
-    ["loginBox", "forgotBox", "newPasswordBox"].forEach(box => {
-      document.getElementById(box).classList.add("hidden");
-    });
-    document.getElementById(id).classList.remove("hidden");
+    ["loginBox", "forgotBox", "newPasswordBox", "dashboard"]
+      .forEach(box => $(box).classList.add("hidden"));
+
+    $(id).classList.remove("hidden");
     message.textContent = "";
   }
 
-  document.getElementById("forgotBtn").onclick = () => {
-    showBox("forgotBox");
-  };
+  function money(value) {
+    return "৳ " + Number(value || 0).toLocaleString("en-IN");
+  }
 
-  document.getElementById("backBtn").onclick = () => {
-    showBox("loginBox");
-  };
+  $("forgotBtn").onclick = () => showBox("forgotBox");
+  $("backBtn").onclick = () => showBox("loginBox");
 
-  document.getElementById("sendResetBtn").onclick = async () => {
-    const email = document.getElementById("resetEmail").value.trim();
+  $("sendResetBtn").onclick = async () => {
+    const email = $("resetEmail").value.trim();
 
     if (!email) {
       message.textContent = "ইমেইল লিখুন।";
       return;
     }
 
-    const { error } = await db.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin + window.location.pathname
-    });
+    message.textContent = "লিংক পাঠানো হচ্ছে...";
 
-    message.textContent = error
-      ? "সমস্যা: " + error.message
-      : "আপনার ইমেইলে রিসেট লিংক পাঠানো হয়েছে।";
+    try {
+      const { error } = await db.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + window.location.pathname
+      });
+
+      message.textContent = error
+        ? "সমস্যা: " + error.message
+        : "ইমেইল চেক করুন। রিসেট লিংক পাঠানো হয়েছে।";
+    } catch (err) {
+      message.textContent = "সমস্যা: " + err.message;
+    }
   };
 
-  db.auth.onAuthStateChange((event, session) => {
+  db.auth.onAuthStateChange((event) => {
     if (event === "PASSWORD_RECOVERY") {
       showBox("newPasswordBox");
     }
   });
 
-  document.getElementById("savePasswordBtn").onclick = async () => {
-    const password = document.getElementById("newPassword").value;
-    const confirm = document.getElementById("confirmPassword").value;
+  $("savePasswordBtn").onclick = async () => {
+    const password = $("newPassword").value;
+    const confirm = $("confirmPassword").value;
 
     if (password.length < 6) {
       message.textContent = "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন।";
@@ -316,9 +194,7 @@ small{display:block;margin-top:20px;color:#777}
       return;
     }
 
-    const { error } = await db.auth.updateUser({
-      password: password
-    });
+    const { error } = await db.auth.updateUser({ password });
 
     if (error) {
       message.textContent = "সমস্যা: " + error.message;
@@ -326,20 +202,112 @@ small{display:block;margin-top:20px;color:#777}
     }
 
     await db.auth.signOut();
+    $("newPassword").value = "";
+    $("confirmPassword").value = "";
     showBox("loginBox");
     message.style.color = "green";
-    message.textContent = "পাসওয়ার্ড পরিবর্তন সফল হয়েছে। এখন লগইন করুন।";
+    message.textContent = "পাসওয়ার্ড পরিবর্তন হয়েছে। এখন লগইন করুন।";
   };
 
-  document.getElementById("loginBtn").onclick = async () => {
-    const email = document.getElementById("email").value.trim();
-    const password = document.getElementById("password").value;
-    const selectedRole = document.getElementById("role").value;
+  async function loadDashboard(user) {
+    const { data: profile, error } = await db
+      .from("profiles")
+      .select("role, organization_id")
+      .eq("id", user.id)
+      .single();
+
+    if (error || !profile) {
+      message.textContent = "প্রোফাইল পাওয়া যায়নি। Supabase profiles টেবিল পরীক্ষা করুন।";
+      await db.auth.signOut();
+      return;
+    }
+
+    const selectedRole = $("role").value;
+
+    if (profile.role !== selectedRole) {
+      message.textContent = "আপনার অ্যাকাউন্টের ধরন সঠিক নয়।";
+      await db.auth.signOut();
+      return;
+    }
+
+    if (!profile.organization_id) {
+      message.textContent = "এই অ্যাকাউন্টের সঙ্গে সংগঠন যুক্ত নেই।";
+      await db.auth.signOut();
+      return;
+    }
+
+    $("welcome").textContent = "লগইন সফল হয়েছে। ভূমিকা: " + profile.role;
+    showBox("dashboard");
+    message.textContent = "হিসাব লোড হচ্ছে...";
+
+    const orgId = profile.organization_id;
+
+    const { data: transactions, error: txError } = await db
+      .from("transactions")
+      .select("transaction_type, amount, description, transaction_date")
+      .eq("organization_id", orgId)
+      .order("transaction_date", { ascending: false });
+
+    if (txError) {
+      message.textContent = "লেনদেন লোড হয়নি: " + txError.message;
+      return;
+    }
+
+    let income = 0;
+    let expense = 0;
+
+    (transactions || []).forEach(item => {
+      const amount = Number(item.amount || 0);
+      if (item.transaction_type === "income") income += amount;
+      if (item.transaction_type === "expense") expense += amount;
+    });
+
+    $("totalIncome").textContent = money(income);
+    $("totalExpense").textContent = money(expense);
+    $("balance").textContent = money(income - expense);
+
+    const { count, error: memberError } = await db
+      .from("members")
+      .select("*", { count: "exact", head: true })
+      .eq("organization_id", orgId);
+
+    $("memberCount").textContent = memberError
+      ? "লোড করা যায়নি"
+      : (count ?? 0) + " জন";
+
+    $("transactionList").innerHTML = "";
+
+    if (!transactions || transactions.length === 0) {
+      $("transactionList").textContent = "এখনো কোনো লেনদেন নেই।";
+    } else {
+      transactions.slice(0, 10).forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
+        div.textContent =
+          (item.description || "লেনদেন") + " — " +
+          money(item.amount) + " — " +
+          (item.transaction_date || "");
+        $("transactionList").appendChild(div);
+      });
+    }
+
+    message.textContent = "";
+  }
+
+  $("loginBtn").onclick = async () => {
+    const email = $("email").value.trim();
+    const password = $("password").value;
+
+    if (!email || !password) {
+      message.textContent = "ইমেইল ও পাসওয়ার্ড লিখুন।";
+      return;
+    }
 
     message.textContent = "লগইন হচ্ছে...";
 
     const { data, error } = await db.auth.signInWithPassword({
-      email, password
+      email,
+      password
     });
 
     if (error) {
@@ -347,22 +315,17 @@ small{display:block;margin-top:20px;color:#777}
       return;
     }
 
-    const { data: profile, error: profileError } = await db
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
+    await loadDashboard(data.user);
+  };
 
-    if (profileError || !profile || profile.role !== selectedRole) {
-      await db.auth.signOut();
-      message.textContent = "অ্যাকাউন্টের ধরন সঠিক নয়।";
-      return;
-    }
-
-    message.style.color = "green";
-    message.textContent = "লগইন সফল হয়েছে!";
+  $("logoutBtn").onclick = async () => {
+    await db.auth.signOut();
+    showBox("loginBox");
+    message.textContent = "আপনি লগআউট করেছেন।";
   };
 </script>
+
 </body>
 </html>
+
 
