@@ -335,6 +335,21 @@ async function loadMembers(){
   select.appendChild(first);
 
   members.forEach(m=>{
+  const accountSelect = el("accountMember");
+  accountSelect.replaceChildren();
+
+  const accountFirst = document.createElement("option");
+  accountFirst.value = "";
+  accountFirst.textContent = "সদস্য নির্বাচন করুন";
+  accountSelect.appendChild(accountFirst);
+
+  members.forEach(m => {
+    const option = document.createElement("option");
+    option.value = m.id;
+    option.textContent = m.full_name;
+    accountSelect.appendChild(option);
+  });
+
     const option=document.createElement("option");
     option.value=m.id;
     option.textContent=m.full_name;
