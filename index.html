@@ -379,6 +379,42 @@ async function loadMembers(){
   });
 }
 
+
+el("accountForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  const memberId = el("accountMember").value;
+  const memberCode = el("memberCode").value.trim().toUpperCase();
+  const password = el("memberPassword").value;
+
+  if (!memberId) {
+    msg("accountMessage", "সদস্য নির্বাচন করুন।");
+    return;
+  }
+
+  msg("accountMessage", "অ্যাকাউন্ট তৈরি হচ্ছে...", false);
+
+  const { data, error } = await db.functions.invoke("smooth", {
+    body: {
+      memberId,
+      memberCode,
+      password
+    }
+  });
+
+  if (error) {
+    msg("accountMessage", "সমস্যা হয়েছে: " + error.message);
+    return;
+  }
+
+  if (data?.error) {
+    msg("accountMessage", data.error);
+    return;
+  }
+
+  msg("accountMessage", "সদস্যের লগইন অ্যাকাউন্ট তৈরি হয়েছে। আইডি: " + data.memberCode, false);
+  el("accountForm").reset();
+});
 el("memberForm").addEventListener("submit",async event=>{
   event.preventDefault();
 
