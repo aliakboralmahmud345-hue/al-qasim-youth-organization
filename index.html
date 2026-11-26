@@ -16,7 +16,7 @@ h2{color:#075b45;margin-top:0}
 input,select,button{width:100%;padding:12px;margin:7px 0;border:1px solid #cbd5e1;border-radius:7px;font-size:16px}
 button{background:#087653;color:white;border:0;cursor:pointer}
 .secondary{background:#475569}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
 .stat{background:#ecfdf5;padding:18px;border-radius:9px;text-align:center}
 .stat strong{display:block;font-size:23px;color:#075b45;margin-top:8px}
 .hidden{display:none}
@@ -25,13 +25,13 @@ button{background:#087653;color:white;border:0;cursor:pointer}
 .message{padding:8px}
 .paid{color:#087653;font-weight:bold}
 .unpaid{color:#b42318;font-weight:bold}
+.report-line{padding:8px 0;border-bottom:1px solid #ddd}
 @media print{
-body{background:white;color:#000}
-body *{visibility:hidden}
-#monthlyReportCard,#monthlyReportCard *{visibility:visible}
-#monthlyReportCard{position:absolute;left:0;top:0;width:100%;margin:0;padding:10px;box-shadow:none}
-#monthlyReportCard button,#monthlyReportCard input{display:none!important}
-.item{break-inside:avoid}
+ body{background:white}
+ body *{visibility:hidden}
+ #monthlyReport,#monthlyReport *{visibility:visible}
+ #monthlyReport{position:absolute;left:0;top:0;width:100%;box-shadow:none}
+ #printReportBtn{display:none}
 }
 </style>
 </head>
@@ -43,6 +43,7 @@ body *{visibility:hidden}
 </header>
 
 <main>
+
 <section class="card" id="loginBox">
 <h2>অ্যাডমিন লগইন</h2>
 <input id="email" type="email" placeholder="ইমেইল">
@@ -60,6 +61,7 @@ body *{visibility:hidden}
 </section>
 
 <section id="dashboard" class="hidden">
+
 <div class="card">
 <h2>ড্যাশবোর্ড</h2>
 <p>স্বাগতম: <span id="userEmail"></span></p>
@@ -67,36 +69,13 @@ body *{visibility:hidden}
 <div class="grid">
 <div class="stat">মোট সদস্য<strong id="memberCount">০</strong></div>
 <div class="stat">মোট চাঁদা জমা<strong id="duesTotal">৳ ০</strong></div>
-<div class="stat">মোট বকেয়া<strong id="dueBalance">৳ ০</strong></div>
-<div class="stat">মোট জমা<strong id="income">৳ ০</strong></div>
+<div class="stat">মোট চাঁদা বকেয়া<strong id="dueBalance">৳ ০</strong></div>
+<div class="stat">অন্যান্য আয়<strong id="income">৳ ০</strong></div>
 <div class="stat">মোট খরচ<strong id="expense">৳ ০</strong></div>
+<div class="stat">অবশিষ্ট টাকা<strong id="balance">৳ ০</strong></div>
 </div>
 </div>
 
-
-<div class="card">
-  <h2>আয়-ব্যয়ের হিসাব</h2>
-  <form id="transactionForm">
-    <label>হিসাবের ধরন</label>
-    <select id="transactionType" required>
-      <option value="income">আয়</option>
-      <option value="expense">ব্যয়</option>
-    </select>
-
-    <label>টাকার পরিমাণ</label>
-    <input id="transactionAmount" type="number" min="1" required placeholder="টাকার পরিমাণ">
-
-    <label>বিবরণ</label>
-    <input id="transactionDescription" required placeholder="কী বাবদ আয় বা খরচ">
-
-    <label>তারিখ</label>
-    <input id="transactionDate" type="date" required>
-
-    <button type="submit">হিসাব সংরক্ষণ করুন</button>
-  </form>
-  <div id="transactionMessage" class="message"></div>
-  <div id="transactionList"></div>
-</div>
 <div class="card">
 <h2>নতুন সদস্য যোগ করুন</h2>
 <form id="memberForm">
@@ -130,6 +109,32 @@ body *{visibility:hidden}
 </div>
 
 <div class="card">
+<h2>আয়-ব্যয়ের হিসাব যোগ করুন</h2>
+<form id="transactionForm">
+<label>হিসাবের ধরন</label>
+<select id="transactionType" required>
+<option value="income">আয়</option>
+<option value="expense">খরচ</option>
+</select>
+<label>টাকার পরিমাণ</label>
+<input id="transactionAmount" type="number" min="1" required placeholder="টাকার পরিমাণ">
+<label>বিবরণ</label>
+<input id="transactionDescription" required placeholder="কী বাবদ আয় বা খরচ">
+<label>তারিখ</label>
+<input id="transactionDate" type="date" required>
+<button type="submit">হিসাব সংরক্ষণ করুন</button>
+</form>
+<div id="transactionMessage" class="message"></div>
+</div>
+
+<div class="card">
+<h2>আয়-ব্যয়ের তালিকা</h2>
+<label>মাস অনুযায়ী দেখুন</label>
+<input id="transactionFilterMonth" type="month">
+<div id="transactionList">লোড হচ্ছে...</div>
+</div>
+
+<div class="card">
 <h2>সদস্যভিত্তিক চাঁদার হিসাব</h2>
 <p class="small">প্রতি মাসে ৫০ টাকা। যোগদানের মাস থেকে চলতি মাস পর্যন্ত হিসাব করা হবে।</p>
 <div id="memberDueList">লোড হচ্ছে...</div>
@@ -147,16 +152,17 @@ body *{visibility:hidden}
 <div id="duesList">লোড হচ্ছে...</div>
 </div>
 
-<div class="card" id="monthlyReportCard">
+<div class="card">
 <h2>মাসিক চাঁদার রিপোর্ট</h2>
 <label>রিপোর্টের মাস নির্বাচন করুন</label>
 <input id="reportMonth" type="month">
-<button id="makeReportBtn" type="button">রিপোর্ট দেখুন</button>
-<button id="printReportBtn" type="button" class="secondary">প্রিন্ট / PDF সংরক্ষণ</button>
-<div id="monthlyReportResult">
-<p class="small">মাস নির্বাচন করে “রিপোর্ট দেখুন” চাপুন।</p>
+<button id="makeReportBtn">রিপোর্ট দেখুন</button>
+<div id="monthlyReport" style="margin-top:15px">
+রিপোর্ট দেখতে মাস নির্বাচন করে বাটনে ক্লিক করুন।
 </div>
+<button id="printReportBtn" class="secondary">প্রিন্ট / PDF সংরক্ষণ</button>
 </div>
+
 </section>
 </main>
 
@@ -172,6 +178,7 @@ let currentUser = null;
 let organizationId = null;
 let members = [];
 let allDues = [];
+let allTransactions = [];
 
 function msg(id,text,error=true){
   el(id).textContent=text;
@@ -186,6 +193,10 @@ function monthCount(start,end){
   const [sy,sm]=start.split("-").map(Number);
   const [ey,em]=end.split("-").map(Number);
   return Math.max(0,(ey-sy)*12+(em-sm)+1);
+}
+
+function money(amount){
+  return "৳ "+Number(amount||0).toLocaleString("bn-BD");
 }
 
 function showDashboard(){
@@ -218,7 +229,12 @@ async function loadProfile(user){
 
   await loadMembers();
   await loadDues();
+  await loadTransactions();
   await loadSummary();
+
+  el("reportMonth").value=monthString(new Date());
+  el("transactionDate").value=new Date().toISOString().slice(0,10);
+  el("paidDate").value=new Date().toISOString().slice(0,10);
 }
 
 async function login(){
@@ -245,7 +261,10 @@ el("forgotBtn").addEventListener("click",async()=>{
 
 el("savePasswordBtn").addEventListener("click",async()=>{
   const password=el("newPassword").value;
-  if(password.length<6){msg("recoveryMessage","কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন।");return;}
+  if(password.length<6){
+    msg("recoveryMessage","কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন।");
+    return;
+  }
   const {error}=await db.auth.updateUser({password});
   if(error)msg("recoveryMessage",error.message);
   else msg("recoveryMessage","পাসওয়ার্ড পরিবর্তন হয়েছে।",false);
@@ -269,7 +288,11 @@ async function loadMembers(){
     .eq("organization_id",organizationId)
     .order("joining_date",{ascending:false});
 
-  if(error){el("memberList").textContent=error.message;return;}
+  if(error){
+    el("memberList").textContent=error.message;
+    return;
+  }
+
   members=data||[];
   el("memberCount").textContent=members.length.toLocaleString("bn-BD");
 
@@ -302,7 +325,9 @@ async function loadMembers(){
     name.textContent=m.full_name;
     const detail=document.createElement("div");
     detail.className="small";
-    detail.textContent="পিতা: "+(m.father_name||"—")+" | মোবাইল: "+(m.phone||"—")+" | ঠিকানা: "+(m.address||"—");
+    detail.textContent="পিতা: "+(m.father_name||"—")+
+      " | মোবাইল: "+(m.phone||"—")+
+      " | ঠিকানা: "+(m.address||"—");
     item.append(name,detail);
     list.appendChild(item);
   });
@@ -321,7 +346,10 @@ el("memberForm").addEventListener("submit",async event=>{
   };
 
   const {error}=await db.from("members").insert(member);
-  if(error){msg("memberMessage","সংরক্ষণ হয়নি: "+error.message);return;}
+  if(error){
+    msg("memberMessage","সংরক্ষণ হয়নি: "+error.message);
+    return;
+  }
 
   msg("memberMessage","সদস্য সফলভাবে যোগ হয়েছে।",false);
   el("memberForm").reset();
@@ -336,8 +364,14 @@ el("duesForm").addEventListener("submit",async event=>{
   const memberId=el("duesMember").value;
   const member=members.find(m=>m.id===memberId);
 
-  if(!member){msg("duesMessage","সদস্য নির্বাচন করুন।");return;}
-  if(!month){msg("duesMessage","মাস নির্বাচন করুন।");return;}
+  if(!member){
+    msg("duesMessage","সদস্য নির্বাচন করুন।");
+    return;
+  }
+  if(!month){
+    msg("duesMessage","মাস নির্বাচন করুন।");
+    return;
+  }
 
   const joiningMonth=(member.joining_date||"").slice(0,7);
   if(joiningMonth && month<joiningMonth){
@@ -367,6 +401,7 @@ el("duesForm").addEventListener("submit",async event=>{
   msg("duesMessage","৫০ টাকা চাঁদা সফলভাবে জমা হয়েছে।",false);
   el("duesForm").reset();
   el("duesAmount").value=MONTHLY_FEE;
+  el("paidDate").value=new Date().toISOString().slice(0,10);
   await loadDues();
   await loadSummary();
 });
@@ -413,7 +448,7 @@ function renderDuesList(){
     const detail=document.createElement("div");
     detail.className="small";
     detail.textContent="মাস: "+row.payment_month.slice(0,7)+
-      " | জমা: ৳ "+Number(row.amount).toLocaleString("bn-BD")+
+      " | জমা: "+money(row.amount)+
       " | তারিখ: "+row.paid_date;
 
     item.append(name,detail);
@@ -422,136 +457,6 @@ function renderDuesList(){
 }
 
 el("filterMonth").addEventListener("change",renderDuesList);
-
-function renderMonthlyReport(){
-  const selectedMonth=el("reportMonth").value;
-  const result=el("monthlyReportResult");
-  result.replaceChildren();
-
-  if(!selectedMonth){
-    result.textContent="রিপোর্টের মাস নির্বাচন করুন।";
-    return;
-  }
-
-  const eligibleMembers=members.filter(member=>{
-    const joining=(member.joining_date||"").slice(0,7);
-    return joining && joining<=selectedMonth;
-  });
-
-  const paidRows=allDues.filter(row=>
-    (row.payment_month||"").slice(0,7)===selectedMonth
-  );
-
-  const paidByMember=new Map();
-  paidRows.forEach(row=>{
-    paidByMember.set(
-      row.member_id,
-      (paidByMember.get(row.member_id)||0)+Number(row.amount||0)
-    );
-  });
-
-  const paidMembers=eligibleMembers.filter(member=>
-    (paidByMember.get(member.id)||0)>0
-  );
-
-  const unpaidMembers=eligibleMembers.filter(member=>
-    (paidByMember.get(member.id)||0)<=0
-  );
-
-  const totalPaid=paidRows.reduce(
-    (sum,row)=>sum+Number(row.amount||0),0
-  );
-
-  const totalExpected=eligibleMembers.length*MONTHLY_FEE;
-  const outstanding=Math.max(0,totalExpected-totalPaid);
-
-  const heading=document.createElement("h3");
-  heading.textContent="রিপোর্টের মাস: "+selectedMonth;
-  result.appendChild(heading);
-
-  const summary=document.createElement("div");
-  summary.className="grid";
-
-  const stats=[
-    ["মোট প্রাপ্য","৳ "+totalExpected.toLocaleString("bn-BD")],
-    ["মোট চাঁদা জমা","৳ "+totalPaid.toLocaleString("bn-BD")],
-    ["মোট বকেয়া","৳ "+outstanding.toLocaleString("bn-BD")],
-    ["পরিশোধ করেছেন",paidMembers.length.toLocaleString("bn-BD")+" জন"],
-    ["পরিশোধ করেননি",unpaidMembers.length.toLocaleString("bn-BD")+" জন"]
-  ];
-
-  stats.forEach(([label,value])=>{
-    const box=document.createElement("div");
-    box.className="stat";
-    box.textContent=label;
-
-    const strong=document.createElement("strong");
-    strong.textContent=value;
-    box.appendChild(strong);
-    summary.appendChild(box);
-  });
-
-  result.appendChild(summary);
-
-  function addMemberSection(title,rows,isPaid){
-    const sectionTitle=document.createElement("h3");
-    sectionTitle.textContent=
-      title+" ("+rows.length.toLocaleString("bn-BD")+" জন)";
-    result.appendChild(sectionTitle);
-
-    if(!rows.length){
-      const empty=document.createElement("p");
-      empty.textContent="কেউ নেই।";
-      result.appendChild(empty);
-      return;
-    }
-
-    rows.forEach((member,index)=>{
-      const item=document.createElement("div");
-      item.className="item";
-
-      const name=document.createElement("strong");
-      name.textContent=
-        (index+1).toLocaleString("bn-BD")+". "+member.full_name;
-
-      const detail=document.createElement("div");
-      detail.className="small";
-
-      const amount=paidByMember.get(member.id)||0;
-      detail.textContent=isPaid
-        ?"জমা: ৳ "+amount.toLocaleString("bn-BD")
-        :"এই মাসে বকেয়া: ৳ "+MONTHLY_FEE.toLocaleString("bn-BD");
-
-      item.append(name,detail);
-      result.appendChild(item);
-    });
-  }
-
-  addMemberSection("চাঁদা পরিশোধ করেছেন",paidMembers,true);
-  addMemberSection("চাঁদা পরিশোধ করেননি",unpaidMembers,false);
-
-  const note=document.createElement("p");
-  note.className="small";
-  note.textContent=
-    "নোট: নির্বাচিত মাসে যোগদান করা বা তার আগে যোগদান করা সদস্যদের হিসাব দেখানো হয়েছে। মাসিক চাঁদা ৫০ টাকা।";
-  result.appendChild(note);
-}
-
-el("makeReportBtn").addEventListener("click",renderMonthlyReport);
-el("reportMonth").addEventListener("change",renderMonthlyReport);
-
-el("printReportBtn").addEventListener("click",()=>{
-  if(!el("reportMonth").value){
-    alert("আগে রিপোর্টের মাস নির্বাচন করুন।");
-    return;
-  }
-
-  if(!el("monthlyReportResult").textContent.trim()){
-    renderMonthlyReport();
-  }
-
-  window.print();
-});
 
 async function loadMemberDueStatus(){
   const list=el("memberDueList");
@@ -563,7 +468,7 @@ async function loadMemberDueStatus(){
 
   if(!members.length){
     list.textContent="সদস্য নেই। আগে সদস্য যোগ করুন।";
-    el("dueBalance").textContent="৳ ০";
+    el("dueBalance").textContent=money(0);
     return;
   }
 
@@ -573,15 +478,11 @@ async function loadMemberDueStatus(){
       ? monthCount(joining,currentMonth) : 0;
 
     const payments=allDues.filter(row=>row.member_id===member.id);
-    const paidMonths=new Set(
-      payments.map(row=>row.payment_month.slice(0,7))
-    );
+    const paidMonths=new Set(payments.map(row=>row.payment_month.slice(0,7)));
     const paidCount=paidMonths.size;
 
     const expected=eligible*MONTHLY_FEE;
-    const paid=payments.reduce(
-      (sum,row)=>sum+Number(row.amount||0),0
-    );
+    const paid=payments.reduce((sum,row)=>sum+Number(row.amount||0),0);
     const due=Math.max(0,expected-paid);
 
     totalExpected+=expected;
@@ -598,119 +499,216 @@ async function loadMemberDueStatus(){
     detail.textContent=
       "হিসাবের মাস: "+eligible+
       " | পরিশোধিত মাস: "+paidCount+
-      " | মোট ধার্য: ৳ "+expected.toLocaleString("bn-BD")+
-      " | জমা: ৳ "+paid.toLocaleString("bn-BD");
+      " | মোট ধার্য: "+money(expected)+
+      " | জমা: "+money(paid);
 
     const status=document.createElement("div");
     status.className=due>0?"unpaid":"paid";
     status.textContent=due>0
-      ?"বকেয়া: ৳ "+due.toLocaleString("bn-BD")
+      ?"বকেয়া: "+money(due)
       :"সব চাঁদা পরিশোধিত";
 
     item.append(name,detail,status);
     list.appendChild(item);
   });
 
-  const balance=Math.max(0,totalExpected-totalPaid);
-  el("dueBalance").textContent="৳ "+balance.toLocaleString("bn-BD");
+  el("dueBalance").textContent=money(Math.max(0,totalExpected-totalPaid));
 }
 
-async function loadSummary(){
-  const total=allDues.reduce(
-    (sum,row)=>sum+Number(row.amount||0),0
-  );
-  el("duesTotal").textContent="৳ "+total.toLocaleString("bn-BD");
-
+async function loadTransactions(){
   const {data,error}=await db.from("transactions")
-    .select("amount,type")
-    .eq("organization_id",organizationId);
+    .select("id,type,amount,description,transaction_date")
+    .eq("organization_id",organizationId)
+    .order("transaction_date",{ascending:false});
 
-  if(error || !data)return;
-
-  let income=0,expense=0;
-
-  data.forEach(row=>{
-    const amount=Number(row.amount)||0;
-    const type=String(row.type||"").toLowerCase();
-
-    if(type.includes("expense")||type.includes("খরচ")){
-      expense+=amount;
-    }else{
-      income+=amount;
-    }
-  });
-
-  el("income").textContent="৳ "+income.toLocaleString("bn-BD");
-  el("expense").textContent="৳ "+expense.toLocaleString("bn-BD");
-}
-
-
-// আয়-ব্যয়ের হিসাব সংরক্ষণ
-el("transactionForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  const transaction = {
-    organization_id: organizationId,
-    type: el("transactionType").value,
-    amount: Number(el("transactionAmount").value),
-    description: el("transactionDescription").value.trim(),
-    transaction_date: el("transactionDate").value
-  };
-
-  const { error } = await db.from("transactions").insert(transaction);
-
-  if (error) {
-    msg("transactionMessage", "হিসাব সংরক্ষণ হয়নি: " + error.message);
+  if(error){
+    el("transactionList").textContent="আয়-ব্যয়ের তালিকা পাওয়া যায়নি: "+error.message;
     return;
   }
 
-  msg("transactionMessage", "হিসাব সফলভাবে সংরক্ষণ হয়েছে।", false);
+  allTransactions=data||[];
+  renderTransactions();
+}
 
-  el("transactionForm").reset();
-
-  await loadTransactions();
-  await loadSummary();
-});await loadTransactions();
-
-// আয়-ব্যয়ের তালিকা দেখানো
-async function loadTransactions() {
-  const { data, error } = await db.from("transactions")
-    .select("id,type,amount,description,transaction_date")
-    .eq("organization_id", organizationId)
-    .order("transaction_date", { ascending: false });
-
-  const list = el("transactionList");
+function renderTransactions(){
+  const list=el("transactionList");
   list.replaceChildren();
 
-  if (error) {
-    list.textContent = "হিসাব পাওয়া যায়নি: " + error.message;
+  const filter=el("transactionFilterMonth").value;
+  let rows=allTransactions;
+
+  if(filter){
+    rows=rows.filter(row=>(row.transaction_date||"").slice(0,7)===filter);
+  }
+
+  if(!rows.length){
+    list.textContent="এখনো কোনো আয়-ব্যয়ের হিসাব নেই।";
     return;
   }
 
-  if (!data || data.length === 0) {
-    list.textContent = "এখনো কোনো আয়-ব্যয়ের হিসাব নেই।";
-    return;
-  }
+  rows.forEach(row=>{
+    const item=document.createElement("div");
+    item.className="item";
 
-  data.forEach(row => {
-    const item = document.createElement("div");
-    item.className = "item";
+    const title=document.createElement("strong");
+    title.textContent=(row.type==="expense"?"খরচ: ":"আয়: ")+row.description;
 
-    const title = document.createElement("strong");
-    title.textContent =
-      (row.type === "expense" ? "খরচ: " : "আয়: ") +
-      row.description;
+    const detail=document.createElement("div");
+    detail.className="small";
+    detail.textContent="টাকা: "+money(row.amount)+
+      " | তারিখ: "+row.transaction_date;
 
-    const detail = document.createElement("div");
-    detail.className = "small";
-    detail.textContent =
-      "টাকা: ৳ " + Number(row.amount).toLocaleString("bn-BD") +
-      " | তারিখ: " + row.transaction_date;
-
-    item.append(title, detail);
+    item.append(title,detail);
     list.appendChild(item);
   });
 }
+
+el("transactionFilterMonth").addEventListener("change",renderTransactions);
+
+el("transactionForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+
+  const amount=Number(el("transactionAmount").value);
+  if(!Number.isFinite(amount)||amount<=0){
+    msg("transactionMessage","সঠিক টাকার পরিমাণ লিখুন।");
+    return;
+  }
+
+  const transaction={
+    organization_id:organizationId,
+    type:el("transactionType").value,
+    amount:amount,
+    description:el("transactionDescription").value.trim(),
+    transaction_date:el("transactionDate").value
+  };
+
+  const {error}=await db.from("transactions").insert(transaction);
+
+  if(error){
+    msg("transactionMessage","হিসাব সংরক্ষণ হয়নি: "+error.message);
+    return;
+  }
+
+  msg("transactionMessage","হিসাব সফলভাবে সংরক্ষণ হয়েছে।",false);
+  el("transactionForm").reset();
+  el("transactionDate").value=new Date().toISOString().slice(0,10);
+
+  await loadTransactions();
+  await loadSummary();
+});
+
+async function loadSummary(){
+  const duesTotal=allDues.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  el("duesTotal").textContent=money(duesTotal);
+
+  let income=0;
+  let expense=0;
+
+  allTransactions.forEach(row=>{
+    const amount=Number(row.amount)||0;
+    if(row.type==="expense")expense+=amount;
+    else if(row.type==="income")income+=amount;
+  });
+
+  el("income").textContent=money(income);
+  el("expense").textContent=money(expense);
+  el("balance").textContent=money(duesTotal+income-expense);
+}
+
+function makeMonthlyReport(){
+  const month=el("reportMonth").value;
+  if(!month){
+    el("monthlyReport").textContent="প্রথমে মাস নির্বাচন করুন।";
+    return;
+  }
+
+  const eligibleMembers=members.filter(member=>{
+    const joining=(member.joining_date||"").slice(0,7);
+    return joining && joining<=month;
+  });
+
+  const paidRows=allDues.filter(row=>
+    (row.payment_month||"").slice(0,7)===month
+  );
+
+  const paidIds=new Set(
+    paidRows.filter(row=>Number(row.amount)>0).map(row=>row.member_id)
+  );
+
+  const paidMembers=eligibleMembers.filter(member=>paidIds.has(member.id));
+  const unpaidMembers=eligibleMembers.filter(member=>!paidIds.has(member.id));
+
+  const totalExpected=eligibleMembers.length*MONTHLY_FEE;
+  const totalPaid=paidRows.reduce((sum,row)=>sum+Number(row.amount||0),0);
+  const outstanding=Math.max(0,totalExpected-totalPaid);
+
+  const report=el("monthlyReport");
+  report.replaceChildren();
+
+  const heading=document.createElement("h3");
+  heading.textContent="রিপোর্টের মাস: "+month;
+  report.appendChild(heading);
+
+  const summary=document.createElement("div");
+  summary.innerHTML=
+    '<div class="report-line">মোট প্রাপ্য: <strong>'+money(totalExpected)+'</strong></div>'+
+    '<div class="report-line">মোট চাঁদা জমা: <strong>'+money(totalPaid)+'</strong></div>'+
+    '<div class="report-line">মোট বকেয়া: <strong>'+money(outstanding)+'</strong></div>'+
+    '<div class="report-line">পরিশোধ করেছেন: <strong>'+paidMembers.length.toLocaleString("bn-BD")+' জন</strong></div>'+
+    '<div class="report-line">পরিশোধ করেননি: <strong>'+unpaidMembers.length.toLocaleString("bn-BD")+' জন</strong></div>';
+  report.appendChild(summary);
+
+  const paidHeading=document.createElement("h3");
+  paidHeading.textContent="চাঁদা পরিশোধ করেছেন ("+paidMembers.length+" জন)";
+  report.appendChild(paidHeading);
+
+  if(!paidMembers.length){
+    const p=document.createElement("p");
+    p.textContent="কেউ নেই।";
+    report.appendChild(p);
+  }else{
+    paidMembers.forEach((member,index)=>{
+      const row=paidRows.filter(r=>r.member_id===member.id);
+      const amount=row.reduce((sum,r)=>sum+Number(r.amount||0),0);
+      const p=document.createElement("p");
+      p.textContent=(index+1)+". "+member.full_name+" — জমা: "+money(amount);
+      report.appendChild(p);
+    });
+  }
+
+  const unpaidHeading=document.createElement("h3");
+  unpaidHeading.textContent="চাঁদা পরিশোধ করেননি ("+unpaidMembers.length+" জন)";
+  report.appendChild(unpaidHeading);
+
+  if(!unpaidMembers.length){
+    const p=document.createElement("p");
+    p.textContent="কেউ নেই।";
+    report.appendChild(p);
+  }else{
+    unpaidMembers.forEach((member,index)=>{
+      const p=document.createElement("p");
+      p.textContent=(index+1)+". "+member.full_name;
+      report.appendChild(p);
+    });
+  }
+
+  const note=document.createElement("p");
+  note.className="small";
+  note.textContent="নোট: নির্বাচিত মাসে যোগদান করা বা তার আগে যোগদান করা সদস্যদের হিসাব দেখানো হয়েছে। মাসিক চাঁদা ৫০ টাকা।";
+  report.appendChild(note);
+}
+
+el("makeReportBtn").addEventListener("click",makeMonthlyReport);
+
+el("printReportBtn").addEventListener("click",()=>{
+  if(!el("reportMonth").value){
+    alert("প্রথমে রিপোর্টের মাস নির্বাচন করুন।");
+    return;
+  }
+  makeMonthlyReport();
+  window.print();
+});
+
 el("logoutBtn").addEventListener("click",async()=>{
   await db.auth.signOut();
   currentUser=null;
@@ -719,8 +717,6 @@ el("logoutBtn").addEventListener("click",async()=>{
 });
 
 (async()=>{
-  el("reportMonth").value=monthString(new Date());
-
   const {data}=await db.auth.getSession();
   if(data.session)await loadProfile(data.session.user);
 })();
