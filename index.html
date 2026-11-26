@@ -2,330 +2,325 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      margin: 0;
-      padding: 20px;
-      color: #1e293b;
-    }
-    .container {
-      max-width: 650px;
-      margin: 30px auto;
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 3px 15px #0001;
-    }
-    h2, h3 { text-align: center; color: #166534; }
-    input, select, button {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 12px;
-      margin: 8px 0;
-      border: 1px solid #cbd5e1;
-      border-radius: 7px;
-      font-size: 16px;
-    }
-    button {
-      background: #15803d;
-      color: white;
-      border: 0;
-      cursor: pointer;
-    }
-    button:hover { background: #166534; }
-    .link {
-      color: #2563eb;
-      cursor: pointer;
-      text-align: center;
-    }
-    .hidden { display: none; }
-    .message { text-align: center; margin: 12px 0; }
-    .card {
-      background: #f0fdf4;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 8px;
-    }
-    .amount { font-size: 22px; font-weight: bold; }
-    .item {
-      padding: 10px;
-      border-bottom: 1px solid #e2e8f0;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>আল ক্বাসিম ইসলামি যুব সংঘ</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f1f5f9;color:#172033}
+header{background:#075b45;color:white;padding:20px;text-align:center}
+main{max-width:950px;margin:25px auto;padding:15px}
+.card{background:white;padding:20px;border-radius:12px;margin-bottom:18px;box-shadow:0 2px 10px #0000000c}
+h2{margin-top:0;color:#075b45}
+input,button{width:100%;padding:12px;margin:7px 0;border-radius:7px;font-size:16px}
+input{border:1px solid #cbd5e1}
+button{border:0;background:#087653;color:white;cursor:pointer}
+button:hover{background:#064e3b}
+.secondary{background:#475569}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.stat{background:#ecfdf5;padding:18px;border-radius:9px;text-align:center}
+.stat strong{display:block;font-size:25px;color:#075b45;margin-top:8px}
+.hidden{display:none}
+.member{border-bottom:1px solid #e2e8f0;padding:12px 0}
+.small{font-size:13px;color:#64748b}
+#message{padding:10px;color:#b42318}
+</style>
 </head>
 <body>
+<header>
+<h2 style="color:white;margin:0">আল ক্বাসিম ইসলামি যুব সংঘ</h2>
+<p>সংগঠনের হিসাব ব্যবস্থাপনা</p>
+</header>
 
-<div class="container">
-  <h2>আল ক্বাসিম ইসলামি যুব সংঘ</h2>
-  <p style="text-align:center">হিসাব ব্যবস্থাপনা</p>
+<main>
+<section class="card" id="loginBox">
+<h2>অ্যাডমিন লগইন</h2>
+<input id="email" type="email" placeholder="আপনার ইমেইল">
+<input id="password" type="password" placeholder="পাসওয়ার্ড">
+<button id="loginBtn">লগইন করুন</button>
+<button class="secondary" id="forgotBtn">পাসওয়ার্ড ভুলে গেছেন?</button>
+<div id="message"></div>
+</section>
 
-  <div id="loginBox">
-    <h3>লগইন করুন</h3>
-    <input id="email" type="email" placeholder="আপনার ইমেইল">
-    <input id="password" type="password" placeholder="পাসওয়ার্ড">
+<section class="card hidden" id="recoveryBox">
+<h2>নতুন পাসওয়ার্ড দিন</h2>
+<input id="newPassword" type="password" placeholder="নতুন পাসওয়ার্ড">
+<button id="savePasswordBtn">পাসওয়ার্ড পরিবর্তন করুন</button>
+<div id="recoveryMessage"></div>
+</section>
 
-    <select id="role">
-      <option value="super_admin">সুপার অ্যাডমিন</option>
-      <option value="org_admin">সংগঠন অ্যাডমিন</option>
-      <option value="member">সদস্য</option>
-    </select>
-
-    <button id="loginBtn">লগইন</button>
-    <p class="link" id="forgotBtn">পাসওয়ার্ড ভুলে গেছেন?</p>
-  </div>
-
-  <div id="forgotBox" class="hidden">
-    <h3>পাসওয়ার্ড রিসেট</h3>
-    <input id="resetEmail" type="email" placeholder="আপনার ইমেইল">
-    <button id="sendResetBtn">রিসেট লিংক পাঠান</button>
-    <p class="link" id="backBtn">লগইনে ফিরে যান</p>
-  </div>
-
-  <div id="newPasswordBox" class="hidden">
-    <h3>নতুন পাসওয়ার্ড দিন</h3>
-    <input id="newPassword" type="password" placeholder="নতুন পাসওয়ার্ড">
-    <input id="confirmPassword" type="password" placeholder="আবার পাসওয়ার্ড দিন">
-    <button id="savePasswordBtn">পাসওয়ার্ড পরিবর্তন করুন</button>
-  </div>
-
-  <div id="dashboard" class="hidden">
-    <h3>হিসাবের ড্যাশবোর্ড</h3>
-    <p id="welcome"></p>
-
-    <div class="card">
-      মোট জমা
-      <div class="amount" id="totalIncome">৳ ০</div>
-    </div>
-    <div class="card">
-      মোট খরচ
-      <div class="amount" id="totalExpense">৳ ০</div>
-    </div>
-    <div class="card">
-      অবশিষ্ট টাকা
-      <div class="amount" id="balance">৳ ০</div>
-    </div>
-
-    <h3>সদস্য সংখ্যা</h3>
-    <div class="card amount" id="memberCount">লোড হচ্ছে...</div>
-
-    <h3>সাম্প্রতিক লেনদেন</h3>
-    <div id="transactionList">লোড হচ্ছে...</div>
-
-    <button id="logoutBtn">লগআউট</button>
-  </div>
-
-  <p id="message" class="message"></p>
+<section class="hidden" id="dashboard">
+<div class="card">
+<h2>ড্যাশবোর্ড</h2>
+<p>স্বাগতম! <span id="userEmail"></span></p>
+<button class="secondary" id="logoutBtn">লগআউট</button>
+<div class="grid">
+<div class="stat">মোট সদস্য<strong id="memberCount">০</strong></div>
+<div class="stat">মোট জমা<strong id="income">৳ ০</strong></div>
+<div class="stat">মোট খরচ<strong id="expense">৳ ০</strong></div>
+</div>
 </div>
 
+<div class="card">
+<h2>নতুন সদস্য যোগ করুন</h2>
+<form id="memberForm">
+<input id="fullName" required placeholder="সদস্যের নাম">
+<input id="fatherName" placeholder="পিতার নাম">
+<input id="phone" placeholder="মোবাইল নম্বর">
+<input id="address" placeholder="ঠিকানা">
+<label>যোগদানের তারিখ</label>
+<input id="joiningDate" type="date" required>
+<button type="submit">সদস্য সংরক্ষণ করুন</button>
+</form>
+<div id="memberMessage"></div>
+</div>
+
+<div class="card">
+<h2>সদস্য তালিকা</h2>
+<div id="memberList">লোড হচ্ছে...</div>
+</div>
+</section>
+</main>
+
 <script>
-  // এখানে আপনার আগের Supabase URL ও Publishable/Anon Key বসান
-  const SUPABASE_URL =  "https://tlwygxvvoxamilynhicf.supabase.co";
-  const SUPABASE_KEY = "sb_publishable_sqPsAmbN1M-DcGNS3OOZLw_AYnnfkFv";
+// আপনার আগের index.html থেকে এই দুটি মান বসাবেন
+const SUPABASE_URL = "https://tlwygxvvoxamilynhicf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_sqPsAmbN1M-DcGNS3OOZLw_AYnnfkFv";
 
-  const db = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-  const $ = id => document.getElementById(id);
-  const message = $("message");
+let currentUser = null;
+let organizationId = null;
 
-  function showBox(id) {
-    ["loginBox", "forgotBox", "newPasswordBox", "dashboard"]
-      .forEach(box => $(box).classList.add("hidden"));
+const el = id => document.getElementById(id);
 
-    $(id).classList.remove("hidden");
-    message.textContent = "";
+function showMessage(id, message, isError=true) {
+  el(id).textContent = message;
+  el(id).style.color = isError ? "#b42318" : "#087653";
+}
+
+function showDashboard() {
+  el("loginBox").classList.add("hidden");
+  el("recoveryBox").classList.add("hidden");
+  el("dashboard").classList.remove("hidden");
+}
+
+function showLogin() {
+  el("dashboard").classList.add("hidden");
+  el("recoveryBox").classList.add("hidden");
+  el("loginBox").classList.remove("hidden");
+}
+
+async function loadProfile(user) {
+  currentUser = user;
+
+  const {data, error} = await db
+    .from("profiles")
+    .select("organization_id, role")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    showMessage("message", "আপনার প্রোফাইল পাওয়া যায়নি। Supabase-এর profiles টেবিল পরীক্ষা করুন।");
+    return;
   }
 
-  function money(value) {
-    return "৳ " + Number(value || 0).toLocaleString("en-IN");
+  organizationId = data.organization_id;
+  el("userEmail").textContent = user.email || "";
+  showDashboard();
+  await loadMembers();
+  await loadSummary();
+}
+
+async function login() {
+  showMessage("message", "লগইন হচ্ছে...", false);
+
+  const email = el("email").value.trim();
+  const password = el("password").value;
+
+  const {data, error} = await db.auth.signInWithPassword({email, password});
+
+  if (error) {
+    showMessage("message", "লগইন হয়নি: " + error.message);
+    return;
   }
 
-  $("forgotBtn").onclick = () => showBox("forgotBox");
-  $("backBtn").onclick = () => showBox("loginBox");
+  await loadProfile(data.user);
+}
 
-  $("sendResetBtn").onclick = async () => {
-    const email = $("resetEmail").value.trim();
+el("loginBtn").addEventListener("click", login);
 
-    if (!email) {
-      message.textContent = "ইমেইল লিখুন।";
-      return;
-    }
+el("forgotBtn").addEventListener("click", async () => {
+  const email = el("email").value.trim();
 
-    message.textContent = "লিংক পাঠানো হচ্ছে...";
+  if (!email) {
+    showMessage("message", "আগে আপনার ইমেইল লিখুন।");
+    return;
+  }
 
-    try {
-      const { error } = await db.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin + window.location.pathname
-      });
+  const {error} = await db.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname
+  });
 
-      message.textContent = error
-        ? "সমস্যা: " + error.message
-        : "ইমেইল চেক করুন। রিসেট লিংক পাঠানো হয়েছে।";
-    } catch (err) {
-      message.textContent = "সমস্যা: " + err.message;
-    }
+  if (error) {
+    showMessage("message", error.message);
+  } else {
+    showMessage("message", "আপনার ইমেইলে পাসওয়ার্ড পরিবর্তনের লিংক পাঠানো হয়েছে।", false);
+  }
+});
+
+el("savePasswordBtn").addEventListener("click", async () => {
+  const password = el("newPassword").value;
+
+  if (password.length < 6) {
+    showMessage("recoveryMessage", "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন।");
+    return;
+  }
+
+  const {error} = await db.auth.updateUser({password});
+
+  if (error) {
+    showMessage("recoveryMessage", error.message);
+  } else {
+    showMessage("recoveryMessage", "পাসওয়ার্ড পরিবর্তন হয়েছে। এখন লগইন করতে পারবেন।", false);
+  }
+});
+
+db.auth.onAuthStateChange(async (event, session) => {
+  if (event === "PASSWORD_RECOVERY") {
+    el("loginBox").classList.add("hidden");
+    el("dashboard").classList.add("hidden");
+    el("recoveryBox").classList.remove("hidden");
+    return;
+  }
+
+  if (session && !currentUser && event === "SIGNED_IN") {
+    await loadProfile(session.user);
+  }
+});
+
+async function loadMembers() {
+  const list = el("memberList");
+  list.textContent = "সদস্য তালিকা লোড হচ্ছে...";
+
+  const {data, error} = await db
+    .from("members")
+    .select("id, full_name, father_name, phone, address, joining_date")
+    .eq("organization_id", organizationId)
+    .order("joining_date", {ascending:false});
+
+  if (error) {
+    list.textContent = "সদস্য তালিকা লোড হয়নি: " + error.message;
+    return;
+  }
+
+  el("memberCount").textContent = data.length.toLocaleString("bn-BD");
+  list.replaceChildren();
+
+  if (data.length === 0) {
+    list.textContent = "এখনো কোনো সদস্য যোগ করা হয়নি।";
+    return;
+  }
+
+  data.forEach(member => {
+    const item = document.createElement("div");
+    item.className = "member";
+
+    const name = document.createElement("strong");
+    name.textContent = member.full_name || "নাম নেই";
+    item.appendChild(name);
+
+    const details = document.createElement("p");
+    details.textContent =
+      "পিতার নাম: " + (member.father_name || "—") +
+      " | মোবাইল: " + (member.phone || "—");
+    item.appendChild(details);
+
+    const address = document.createElement("div");
+    address.className = "small";
+    address.textContent =
+      "ঠিকানা: " + (member.address || "—") +
+      " | যোগদানের তারিখ: " + (member.joining_date || "—");
+    item.appendChild(address);
+
+    list.appendChild(item);
+  });
+}
+
+el("memberForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!organizationId) {
+    showMessage("memberMessage", "সংগঠনের তথ্য পাওয়া যায়নি। আবার লগইন করুন।");
+    return;
+  }
+
+  const member = {
+    organization_id: organizationId,
+    full_name: el("fullName").value.trim(),
+    father_name: el("fatherName").value.trim(),
+    phone: el("phone").value.trim(),
+    address: el("address").value.trim(),
+    joining_date: el("joiningDate").value
   };
 
-  db.auth.onAuthStateChange((event) => {
-    if (event === "PASSWORD_RECOVERY") {
-      showBox("newPasswordBox");
+  const {error} = await db.from("members").insert(member);
+
+  if (error) {
+    showMessage("memberMessage", "সদস্য সংরক্ষণ হয়নি: " + error.message);
+    return;
+  }
+
+  showMessage("memberMessage", "সদস্য সফলভাবে যোগ হয়েছে।", false);
+  el("memberForm").reset();
+  await loadMembers();
+});
+
+async function loadSummary() {
+  // লেনদেনের তথ্য পাওয়া না গেলে সদস্য তালিকা ব্যবহার করা যাবে।
+  const {data, error} = await db
+    .from("transactions")
+    .select("amount, type")
+    .eq("organization_id", organizationId);
+
+  if (error || !data) return;
+
+  let income = 0;
+  let expense = 0;
+
+  data.forEach(row => {
+    const amount = Number(row.amount) || 0;
+    const type = String(row.type || "").toLowerCase();
+
+    if (type.includes("expense") || type.includes("খরচ")) {
+      expense += amount;
+    } else {
+      income += amount;
     }
   });
 
-  $("savePasswordBtn").onclick = async () => {
-    const password = $("newPassword").value;
-    const confirm = $("confirmPassword").value;
+  el("income").textContent = "৳ " + income.toLocaleString("bn-BD");
+  el("expense").textContent = "৳ " + expense.toLocaleString("bn-BD");
+}
 
-    if (password.length < 6) {
-      message.textContent = "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন।";
-      return;
-    }
+el("logoutBtn").addEventListener("click", async () => {
+  await db.auth.signOut();
+  currentUser = null;
+  organizationId = null;
+  showLogin();
+});
 
-    if (password !== confirm) {
-      message.textContent = "দুটি পাসওয়ার্ড মিলছে না।";
-      return;
-    }
-
-    const { error } = await db.auth.updateUser({ password });
-
-    if (error) {
-      message.textContent = "সমস্যা: " + error.message;
-      return;
-    }
-
-    await db.auth.signOut();
-    $("newPassword").value = "";
-    $("confirmPassword").value = "";
-    showBox("loginBox");
-    message.style.color = "green";
-    message.textContent = "পাসওয়ার্ড পরিবর্তন হয়েছে। এখন লগইন করুন।";
-  };
-
-  async function loadDashboard(user) {
-    const { data: profile, error } = await db
-      .from("profiles")
-      .select("role, organization_id")
-      .eq("id", user.id)
-      .single();
-
-    if (error || !profile) {
-      message.textContent = "প্রোফাইল পাওয়া যায়নি। Supabase profiles টেবিল পরীক্ষা করুন।";
-      await db.auth.signOut();
-      return;
-    }
-
-    const selectedRole = $("role").value;
-
-    if (profile.role !== selectedRole) {
-      message.textContent = "আপনার অ্যাকাউন্টের ধরন সঠিক নয়।";
-      await db.auth.signOut();
-      return;
-    }
-
-    if (!profile.organization_id) {
-      message.textContent = "এই অ্যাকাউন্টের সঙ্গে সংগঠন যুক্ত নেই।";
-      await db.auth.signOut();
-      return;
-    }
-
-    $("welcome").textContent = "লগইন সফল হয়েছে। ভূমিকা: " + profile.role;
-    showBox("dashboard");
-    message.textContent = "হিসাব লোড হচ্ছে...";
-
-    const orgId = profile.organization_id;
-
-    const { data: transactions, error: txError } = await db
-      .from("transactions")
-      .select("transaction_type, amount, description, transaction_date")
-      .eq("organization_id", orgId)
-      .order("transaction_date", { ascending: false });
-
-    if (txError) {
-      message.textContent = "লেনদেন লোড হয়নি: " + txError.message;
-      return;
-    }
-
-    let income = 0;
-    let expense = 0;
-
-    (transactions || []).forEach(item => {
-      const amount = Number(item.amount || 0);
-      if (item.transaction_type === "income") income += amount;
-      if (item.transaction_type === "expense") expense += amount;
-    });
-
-    $("totalIncome").textContent = money(income);
-    $("totalExpense").textContent = money(expense);
-    $("balance").textContent = money(income - expense);
-
-    const { count, error: memberError } = await db
-      .from("members")
-      .select("*", { count: "exact", head: true })
-      .eq("organization_id", orgId);
-
-    $("memberCount").textContent = memberError
-      ? "লোড করা যায়নি"
-      : (count ?? 0) + " জন";
-
-    $("transactionList").innerHTML = "";
-
-    if (!transactions || transactions.length === 0) {
-      $("transactionList").textContent = "এখনো কোনো লেনদেন নেই।";
-    } else {
-      transactions.slice(0, 10).forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
-        div.textContent =
-          (item.description || "লেনদেন") + " — " +
-          money(item.amount) + " — " +
-          (item.transaction_date || "");
-        $("transactionList").appendChild(div);
-      });
-    }
-
-    message.textContent = "";
+// আগে থেকেই লগইন করা থাকলে সেশন পরীক্ষা
+(async () => {
+  const {data} = await db.auth.getSession();
+  if (data.session) {
+    await loadProfile(data.session.user);
   }
-
-  $("loginBtn").onclick = async () => {
-    const email = $("email").value.trim();
-    const password = $("password").value;
-
-    if (!email || !password) {
-      message.textContent = "ইমেইল ও পাসওয়ার্ড লিখুন।";
-      return;
-    }
-
-    message.textContent = "লগইন হচ্ছে...";
-
-    const { data, error } = await db.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      message.textContent = "লগইন হয়নি: " + error.message;
-      return;
-    }
-
-    await loadDashboard(data.user);
-  };
-
-  $("logoutBtn").onclick = async () => {
-    await db.auth.signOut();
-    showBox("loginBox");
-    message.textContent = "আপনি লগআউট করেছেন।";
-  };
+})();
 </script>
-
 </body>
 </html>
+
 
 
