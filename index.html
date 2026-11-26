@@ -90,6 +90,27 @@ button{background:#087653;color:white;border:0;cursor:pointer}
 <div id="memberMessage" class="message"></div>
 </div>
 
+
+<div class="card">
+<h2>সদস্যের লগইন অ্যাকাউন্ট তৈরি করুন</h2>
+
+<form id="accountForm">
+  <label>সদস্য নির্বাচন করুন</label>
+  <select id="accountMember" required>
+    <option value="">সদস্য নির্বাচন করুন</option>
+  </select>
+
+  <label>সদস্য লগইন আইডি</label>
+  <input id="memberCode" placeholder="যেমন MEM001" required>
+
+  <label>পাসওয়ার্ড</label>
+  <input id="memberPassword" type="password" minlength="8" placeholder="কমপক্ষে ৮ অক্ষর" required>
+
+  <button type="submit">লগইন অ্যাকাউন্ট তৈরি করুন</button>
+</form>
+
+<div id="accountMessage" class="message"></div>
+</div>
 <div class="card">
 <h2>মাসিক চাঁদা জমা করুন</h2>
 <form id="duesForm">
