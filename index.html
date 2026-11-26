@@ -234,17 +234,28 @@ async function loadProfile(user){
   el("reportMonth").value=monthString(new Date());
   el("transactionDate").value=new Date().toISOString().slice(0,10);
   el("paidDate").value=new Date().toISOString().slice(0,10);
-}
 
 async function login(){
   msg("message","লগইন হচ্ছে...",false);
+
+  const loginId=el("email").value.trim();
+  const email=/^MEM\d{3}$/i.test(loginId)
+    ? loginId.toLowerCase()+"@al-qasim.internal"
+    : loginId;
+
   const {data,error}=await db.auth.signInWithPassword({
-    email:el("email").value.trim(),
+    email:email,
     password:el("password").value
   });
-  if(error){msg("message","লগইন হয়নি: "+error.message);return;}
+
+  if(error){
+    msg("message","লগইন হয়নি: "+error.message);
+    return;
+  }
+
   await loadProfile(data.user);
 }
+
 
 el("loginBtn").addEventListener("click",login);
 
