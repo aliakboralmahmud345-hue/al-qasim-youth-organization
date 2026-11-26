@@ -403,7 +403,7 @@ el("accountForm").addEventListener("submit", async event => {
 
   msg("accountMessage", "অ্যাকাউন্ট তৈরি হচ্ছে...", false);
 
-  const { data, error } = await db.functions.invoke("swift-service", {
+  const { data, error } = await db.functions.invoke("swift-handler", {
     body: {
       memberId,
       memberCode,
