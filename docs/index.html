@@ -28,8 +28,57 @@ const editor=()=>role==="super_admin"||role==="org_admin",money=n=>"৳ "+Number
 function say(id,t,ok=false){$(id).textContent=t;$(id).style.color=ok?"#087653":"#b42318"}
 function monthCount(a,b){let [y1,m1]=a.split("-").map(Number),[y2,m2]=b.split("-").map(Number);return Math.max(0,(y2-y1)*12+m2-m1+1)}
 $("googleLoginBtn").onclick=async()=>{say("message","Google লগইন চালু হচ্ছে...",true);let {error}=await db.auth.signInWithOAuth({provider:"google",options:{redirectTo:location.origin+location.pathname}});if(error)say("message",error.message)};
-async function profile(u){user=u;let {data,error}=await db.from("profiles").select("organization_id,role,full_name").eq("id",u.id).maybeSingle();if(error||!data){say("message","প্রোফাইল পাওয়া যায়নি: "+(error?.message||"অ্যাডমিনকে জানান"));return}org=data.organization_id;role=data.role||"member";if(org!==ORG_ID){say("message","এই অ্যাকাউন্ট এই সংগঠনের নয়।");await db.auth.signOut();return}$("userEmail").textContent=u.email||data.full_name||"";$("userRole").textContent=role==="super_admin"?"প্রধান অ্যাডমিন":role==="org_admin"?"এডিটর":"শুধু দেখার অনুমতি";$("loginBox").classList.add("hidden");$("dashboard").classList.remove("hidden");document.querySelectorAll(".editor-only").forEach(x=>x.classList.toggle("hidden",!editor()));let today=new Date().toISOString().slice(0,10);["paidDate","transactionDate"].forEach(id=>$(id).value=today);$("reportMonth").value=monthNow();await refresh();if(channel)await db.removeChannel(channel);channel=db.channel("al-qasim-live").on("postgres_changes",{event:"*",schema:"public",table:"members",filter:"organization_id=eq."+org},refresh).on("postgres_changes",{event:"*",schema:"public",table:"monthly_dues",filter:"organization_id=eq."+org},refresh).on("postgres_changes",{event:"*",schema:"public",table:"transactions",filter:"organization_id=eq."+org},refresh).subscribe()}
-async function refresh(){await loadMembers();await loadDues();await loadTransactions();summary()}
+
+async function profile(u) {
+  let { data, error } = await db
+    .from("profiles")
+    .select("organization_id,role,full_name")
+    .eq("id", u.id)
+    .maybeSingle();
+
+  if (error || !data) {
+    user = null;
+    say("message", "প্রোফাইল পাওয়া যায়নি: " + (error?.message || "অ্যাডমিনকে জানান"));
+    return;
+  }
+
+  if (data.organization_id !== ORG_ID) {
+    user = null;
+    say("message", "এই অ্যাকাউন্ট এই সংগঠনের নয়।");
+    await db.auth.signOut();
+    return;
+  }
+
+  user = u;
+  org = data.organization_id;
+  role = data.role || "member";
+
+  $("userEmail").textContent = u.email || data.full_name || "";
+  $("userRole").textContent =
+    role === "super_admin" ? "প্রধান অ্যাডমিন" :
+    role === "org_admin" ? "এডিটর" :
+    "শুধু দেখার অনুমতি";
+
+  $("loginBox").classList.add("hidden");
+  $("dashboard").classList.remove("hidden");
+
+  document.querySelectorAll(".editor-only")
+    .forEach(x => x.classList.toggle("hidden", !editor()));
+
+  let today = new Date().toISOString().slice(0, 10);
+  ["paidDate", "transactionDate"].forEach(id => $(id).value = today);
+  $("reportMonth").value = monthNow();
+
+  await refresh();
+
+  if (channel) await db.removeChannel(channel);
+
+  channel = db.channel("al-qasim-live")
+    .on("postgres_changes", {event:"*", schema:"public", table:"members", filter:"organization_id=eq." + org}, refresh)
+    .on("postgres_changes", {event:"*", schema:"public", table:"monthly_dues", filter:"organization_id=eq." + org}, refresh)
+    .on("postgres_changes", {event:"*", schema:"public", table:"transactions", filter:"organization_id=eq." + org}, refresh)
+    .subscribe();
+}
 db.auth.onAuthStateChange((event,session)=>{if(event==="SIGNED_IN"&&session?.user&&!user)setTimeout(()=>profile(session.user),0)});
 async function loadMembers(){let {data,error}=await db.from("members").select("id,full_name,father_name,phone,address,joining_date").eq("organization_id",org).order("joining_date",{ascending:false});if(error){$("memberList").textContent=error.message;return}members=data||[];$("memberCount").textContent=members.length.toLocaleString("bn-BD");let sel=$("duesMember");sel.replaceChildren(new Option("সদস্য নির্বাচন করুন",""));members.forEach(m=>sel.add(new Option(m.full_name,m.id)));let list=$("memberList");list.replaceChildren();if(!members.length){list.textContent="এখনো সদস্য যোগ করা হয়নি।";return}members.forEach(m=>{let item=document.createElement("div");item.className="item";let b=document.createElement("b");b.textContent=m.full_name;let d=document.createElement("div");d.className="small";d.textContent="পিতা: "+(m.father_name||"—")+" | মোবাইল: "+(m.phone||"—")+" | ঠিকানা: "+(m.address||"—");item.append(b,d);if(editor()){let a=document.createElement("div");a.className="actions";let e=document.createElement("button");e.textContent="সম্পাদনা";e.onclick=()=>editMember(m);let x=document.createElement("button");x.className="danger";x.textContent="মুছুন";x.onclick=()=>removeRow("members",m.id,"সদস্যটি");a.append(e,x);item.append(a)}list.append(item)})}
 async function editMember(m){let full_name=prompt("সদস্যের নাম",m.full_name);if(full_name===null)return;let father_name=prompt("পিতার নাম",m.father_name||"");if(father_name===null)return;let phone=prompt("মোবাইল",m.phone||"");if(phone===null)return;let address=prompt("ঠিকানা",m.address||"");if(address===null)return;let joining_date=prompt("যোগদানের তারিখ YYYY-MM-DD",m.joining_date||"");if(joining_date===null)return;let {error}=await db.from("members").update({full_name:full_name.trim(),father_name:father_name.trim(),phone:phone.trim(),address:address.trim(),joining_date}).eq("id",m.id).eq("organization_id",org);if(error)alert(error.message);else await refresh()}
