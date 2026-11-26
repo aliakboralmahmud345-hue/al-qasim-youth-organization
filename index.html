@@ -698,7 +698,9 @@ async function loadSummary(){
 
   el("expense").textContent=money(expense);
   el("balance").textContent=money(totalIncome-expense);
-}function makeMonthlyReport(){
+}
+
+function makeMonthlyReport(){ 
   const month=el("reportMonth").value;
   if(!month){
     el("monthlyReport").textContent="প্রথমে মাস নির্বাচন করুন।";
