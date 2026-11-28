@@ -402,3 +402,438 @@ start();
 </script>
 </body>
 </html>
+
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>আল ক্বাসিম ইসলামি যুব সংঘ - হিসাব</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f2f6f3;color:#24332a;font-family:"Noto Sans Bengali",Arial,sans-serif}
+header{background:#075b3b;color:white;text-align:center;padding:25px 12px}
+header h1{margin:0 0 8px;font-size:27px}
+header p{margin:5px}
+main{max-width:1100px;margin:20px auto;padding:0 12px}
+.card{background:white;padding:18px;margin-bottom:18px;border-radius:12px;box-shadow:0 2px 8px #0001}
+h2{color:#075b3b;margin:0 0 15px}
+h3{margin:15px 0 8px;color:#24543c}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.stat{background:#e8f4ec;border-radius:10px;padding:18px;text-align:center}
+.stat strong{display:block;font-size:22px;margin-top:8px}
+input,select,button{font:inherit;width:100%;padding:11px;margin:5px 0;border:1px solid #ccd8cf;border-radius:7px}
+button{background:#087447;color:white;border:0;cursor:pointer}
+button:hover{background:#055b36}
+.secondary{background:#596b60}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:550px}
+th,td{border:1px solid #dce5de;padding:9px;text-align:left}
+th{background:#e8f4ec}
+.status{background:#edf5ef;padding:11px;border-radius:7px;margin-top:10px;overflow-wrap:anywhere}
+.hidden,[hidden]{display:none!important}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.actions button{width:auto}
+footer{text-align:center;padding:20px;color:#647268}
+@media print{
+ body{background:white}
+ .no-print,.admin-panel,button{display:none!important}
+ main{max-width:100%;margin:0}
+ .card{box-shadow:none;border:1px solid #ddd;break-inside:avoid}
+ table{min-width:0;font-size:11px}
+ th,td{padding:5px}
+}
+</style>
+</head>
+<body>
+
+<header>
+ <h1>আল ক্বাসিম ইসলামি যুব সংঘ</h1>
+ <p>বরইকান্দি, সালুটিকর বাজার, সদর, সিলেট</p>
+ <p>সংগঠনের আয়-ব্যয়ের হিসাব</p>
+</header>
+
+<main>
+
+<section class="card no-print">
+ <h2>অ্যাডমিন লগইন</h2>
+ <div id="loginArea">
+  <button id="loginButton" type="button">Google দিয়ে লগইন করুন</button>
+ </div>
+ <div id="adminStatus" class="status">অ্যাডমিন যাচাই করা হচ্ছে...</div>
+ <button id="logoutButton" class="secondary hidden" type="button">লগআউট</button>
+</section>
+
+<section class="card">
+ <h2>সংগঠনের সার্বিক হিসাব</h2>
+ <div class="stats">
+  <div class="stat">মোট সদস্য<strong id="memberCount">০</strong></div>
+  <div class="stat">মোট জমা<strong id="totalIncome">৳ ০</strong></div>
+  <div class="stat">মোট খরচ<strong id="totalExpense">৳ ০</strong></div>
+  <div class="stat">অবশিষ্ট টাকা<strong id="balance">৳ ০</strong></div>
+ </div>
+</section>
+
+<section class="card admin-panel" id="adminPanel" hidden>
+ <h2>অ্যাডমিন প্যানেল</h2>
+
+ <h3>নতুন সদস্য যোগ করুন</h3>
+ <form id="memberForm">
+  <div class="form-grid">
+   <input id="memberName" placeholder="সদস্যের নাম" required>
+   <input id="fatherName" placeholder="পিতার নাম">
+   <input id="memberPhone" placeholder="মোবাইল নম্বর">
+   <input id="memberAddress" placeholder="ঠিকানা">
+   <input id="joiningDate" type="date">
+  </div>
+  <button type="submit">সদস্য যোগ করুন</button>
+ </form>
+
+ <hr>
+ <h3>মাসিক চাঁদা জমা</h3>
+ <form id="dueForm">
+  <div class="form-grid">
+   <select id="dueMember" required>
+    <option value="">সদস্য নির্বাচন করুন</option>
+   </select>
+   <label>যে মাসের চাঁদা
+    <input id="dueMonth" type="date" required>
+   </label>
+   <input id="dueAmount" type="number" min="0.01" step="0.01" placeholder="টাকার পরিমাণ" required>
+   <label>জমার তারিখ
+    <input id="dueDate" type="date" required>
+   </label>
+  </div>
+  <button type="submit">চাঁদা জমা করুন</button>
+ </form>
+
+ <hr>
+ <h3>অন্যান্য আয় / খরচ যোগ করুন</h3>
+ <form id="transactionForm">
+  <div class="form-grid">
+   <select id="transactionType" required>
+    <option value="income">আয়</option>
+    <option value="expense">খরচ</option>
+   </select>
+   <input id="transactionCategory" placeholder="খাত / ক্যাটাগরি" required>
+   <input id="transactionDescription" placeholder="বিবরণ">
+   <input id="transactionAmount" type="number" min="0.01" step="0.01" placeholder="টাকার পরিমাণ" required>
+   <label>তারিখ
+    <input id="transactionDate" type="date" required>
+   </label>
+  </div>
+  <button type="submit">হিসাব সংরক্ষণ করুন</button>
+ </form>
+</section>
+
+<section class="card">
+ <div class="actions">
+  <h2 style="flex:1">সদস্য তালিকা</h2>
+  <button class="no-print" type="button" onclick="window.print()">PDF / প্রিন্ট</button>
+ </div>
+ <div class="table-wrap">
+  <table>
+   <thead><tr><th>ক্রম</th><th>সদস্যের নাম</th><th>যোগদানের তারিখ</th></tr></thead>
+   <tbody id="memberTable"><tr><td colspan="3">হিসাব লোড হচ্ছে...</td></tr></tbody>
+  </table>
+ </div>
+</section>
+
+<section class="card">
+ <div class="actions">
+  <h2 style="flex:1">মাসিক চাঁদার হিসাব</h2>
+  <button class="no-print" type="button" onclick="window.print()">PDF / প্রিন্ট</button>
+ </div>
+ <div class="table-wrap">
+  <table>
+   <thead><tr><th>সদস্য</th><th>মাস</th><th>টাকা</th><th>জমার তারিখ</th></tr></thead>
+   <tbody id="dueTable"><tr><td colspan="4">হিসাব লোড হচ্ছে...</td></tr></tbody>
+  </table>
+ </div>
+</section>
+
+<section class="card">
+ <div class="actions">
+  <h2 style="flex:1">অন্যান্য আয়-ব্যয়ের হিসাব</h2>
+  <button class="no-print" type="button" onclick="window.print()">PDF / প্রিন্ট</button>
+ </div>
+ <div class="table-wrap">
+  <table>
+   <thead><tr><th>ধরন</th><th>খাত</th><th>বিবরণ</th><th>টাকা</th><th>তারিখ</th></tr></thead>
+   <tbody id="transactionTable"><tr><td colspan="5">হিসাব লোড হচ্ছে...</td></tr></tbody>
+  </table>
+ </div>
+</section>
+
+<div id="message" class="status" aria-live="polite">ওয়েবসাইট প্রস্তুত হচ্ছে...</div>
+</main>
+
+<footer>আল ক্বাসিম ইসলামি যুব সংঘ</footer>
+
+<script>
+/* Supabase সংযোগ */
+const SUPABASE_URL = "https://tlwygxvvoxamilynhicf.supabase.co";
+const SUPABASE_KEY = "sb_publishable_sqPsAmbN1M-DcGNS3OOZLw_AYnnfkFv";
+const ORG_ID = "5aa83978-100a-4291-a04b-ce081d2940d6";
+const ADMIN_EMAIL = "aliakboralmahmud345@gmail.com";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let isAdmin = false;
+let members = [];
+let dues = [];
+let transactions = [];
+
+const $ = id => document.getElementById(id);
+
+function localDate(){
+ const d = new Date();
+ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function money(value){
+ return "৳ "+Number(value || 0).toLocaleString("en-BD");
+}
+function safe(value){
+ return String(value ?? "").replace(/[&<>"']/g, c => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ })[c]);
+}
+function message(text){
+ $("message").textContent = text;
+}
+function setAdminUI(value){
+ isAdmin = value;
+ $("adminPanel").hidden = !value;
+ $("loginArea").classList.toggle("hidden",value);
+ $("logoutButton").classList.toggle("hidden",!value);
+ $("adminStatus").textContent = value
+  ? "আপনি অ্যাডমিন হিসেবে লগইন করেছেন।"
+  : "আপনি দর্শক হিসেবে হিসাব দেখতে পারবেন।";
+}
+
+async function loginGoogle(){
+ const {error} = await db.auth.signInWithOAuth({
+  provider:"google",
+  options:{redirectTo:location.origin+location.pathname}
+ });
+ if(error) message("লগইন সমস্যা: "+error.message);
+}
+
+async function logout(){
+ const {error} = await db.auth.signOut();
+ if(error){message("লগআউট সমস্যা: "+error.message);return;}
+ setAdminUI(false);
+ await loadData();
+}
+
+async function checkUser(){
+ const {data,error} = await db.auth.getUser();
+ if(error || !data.user){
+  setAdminUI(false);
+  return;
+ }
+
+ if((data.user.email || "").toLowerCase() !== ADMIN_EMAIL.toLowerCase()){
+  setAdminUI(false);
+  return;
+ }
+
+ const {data:profile,error:profileError} = await db
+  .from("profiles")
+  .select("role,organization_id")
+  .eq("id",data.user.id)
+  .maybeSingle();
+
+ const allowed = !profileError &&
+  profile &&
+  profile.role === "super_admin" &&
+  profile.organization_id === ORG_ID;
+
+ setAdminUI(Boolean(allowed));
+}
+
+async function loadData(){
+ try{
+  /*
+   * গুরুত্বপূর্ণ:
+   * public_members, public_monthly_dues এবং
+   * public_transactions ভিউতে organization_id দিয়ে
+   * ফিল্টার করা হচ্ছে না।
+   */
+  const results = await Promise.all([
+   db.from("public_members").select("*").order("full_name"),
+   db.from("public_monthly_dues").select("*").order("payment_month",{ascending:false}),
+   db.from("public_transactions").select("*").order("transaction_date",{ascending:false})
+  ]);
+
+  for(const result of results){
+   if(result.error) throw result.error;
+  }
+
+  members = results[0].data || [];
+  dues = results[1].data || [];
+  transactions = results[2].data || [];
+
+  renderAll();
+  message("হিসাব আপডেট হয়েছে: "+new Date().toLocaleTimeString("bn-BD"));
+ }catch(error){
+  message("হিসাব লোড করতে সমস্যা: "+error.message);
+ }
+}
+
+function renderAll(){
+ const dueIncome = dues.reduce((sum,row)=>sum+Number(row.amount||0),0);
+ const otherIncome = transactions
+  .filter(row=>(row.type||row.transaction_type)==="income")
+  .reduce((sum,row)=>sum+Number(row.amount||0),0);
+ const expense = transactions
+  .filter(row=>(row.type||row.transaction_type)==="expense")
+  .reduce((sum,row)=>sum+Number(row.amount||0),0);
+
+ $("memberCount").textContent = members.length.toLocaleString("bn-BD");
+ $("totalIncome").textContent = money(dueIncome+otherIncome);
+ $("totalExpense").textContent = money(expense);
+ $("balance").textContent = money(dueIncome+otherIncome-expense);
+
+ $("memberTable").innerHTML = members.length
+  ? members.map((row,index)=>`
+    <tr>
+     <td>${index+1}</td>
+     <td>${safe(row.full_name)}</td>
+     <td>${safe(row.joining_date||"-")}</td>
+    </tr>`).join("")
+  : '<tr><td colspan="3">কোনো সদস্য পাওয়া যায়নি</td></tr>';
+
+ $("dueTable").innerHTML = dues.length
+  ? dues.map(row=>`
+    <tr>
+     <td>${safe(row.member_name||"-")}</td>
+     <td>${safe(row.payment_month||"-")}</td>
+     <td>${money(row.amount)}</td>
+     <td>${safe(row.paid_date||"-")}</td>
+    </tr>`).join("")
+  : '<tr><td colspan="4">কোনো চাঁদার হিসাব নেই</td></tr>';
+
+ $("transactionTable").innerHTML = transactions.length
+  ? transactions.map(row=>`
+    <tr>
+     <td>${safe((row.type||row.transaction_type)==="income"?"আয়":"খরচ")}</td>
+     <td>${safe(row.category)}</td>
+     <td>${safe(row.description)}</td>
+     <td>${money(row.amount)}</td>
+     <td>${safe(row.transaction_date)}</td>
+    </tr>`).join("")
+  : '<tr><td colspan="5">কোনো আয়-ব্যয়ের হিসাব নেই</td></tr>';
+
+ $("dueMember").innerHTML =
+  '<option value="">সদস্য নির্বাচন করুন</option>'+
+  members.map(row=>`<option value="${safe(row.id)}">${safe(row.full_name)}</option>`).join("");
+}
+
+function requireAdmin(){
+ if(!isAdmin){
+  message("এই কাজটি শুধু অ্যাডমিন করতে পারবেন।");
+  return false;
+ }
+ return true;
+}
+
+/* সদস্য যোগ */
+$("memberForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(!requireAdmin()) return;
+
+ const record = {
+  organization_id:ORG_ID,
+  full_name:$("memberName").value.trim(),
+  father_name:$("fatherName").value.trim()||null,
+  phone:$("memberPhone").value.trim()||null,
+  address:$("memberAddress").value.trim()||null,
+  joining_date:$("joiningDate").value||localDate()
+ };
+
+ const {error} = await db.from("members").insert(record);
+ if(error){message("সদস্য যোগ হয়নি: "+error.message);return;}
+
+ event.target.reset();
+ $("joiningDate").value=localDate();
+ message("সদস্য যোগ হয়েছে।");
+ await loadData();
+});
+
+/* মাসিক চাঁদা */
+$("dueForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(!requireAdmin()) return;
+
+ const record = {
+  organization_id:ORG_ID,
+  member_id:$("dueMember").value,
+  payment_month:$("dueMonth").value,
+  amount:Number($("dueAmount").value),
+  paid_date:$("dueDate").value
+ };
+
+ const {error} = await db.from("monthly_dues").insert(record);
+ if(error){message("চাঁদার হিসাব সংরক্ষণ হয়নি: "+error.message);return;}
+
+ event.target.reset();
+ $("dueMonth").value=localDate().slice(0,7)+"-01";
+ $("dueDate").value=localDate();
+ message("চাঁদার হিসাব সংরক্ষণ হয়েছে।");
+ await loadData();
+});
+
+/* অন্যান্য আয়-ব্যয় */
+$("transactionForm").addEventListener("submit",async event=>{
+ event.preventDefault();
+ if(!requireAdmin()) return;
+
+ const type=$("transactionType").value;
+ const record = {
+  organization_id:ORG_ID,
+  type:type,
+  transaction_type:type,
+  category:$("transactionCategory").value.trim(),
+  description:$("transactionDescription").value.trim(),
+  amount:Number($("transactionAmount").value),
+  transaction_date:$("transactionDate").value
+ };
+
+ const {error} = await db.from("transactions").insert(record);
+ if(error){message("হিসাব সংরক্ষণ হয়নি: "+error.message);return;}
+
+ event.target.reset();
+ $("transactionDate").value=localDate();
+ message("আয়-ব্যয়ের হিসাব সংরক্ষণ হয়েছে।");
+ await loadData();
+});
+
+/* শুরু */
+async function start(){
+ $("joiningDate").value=localDate();
+ $("dueMonth").value=localDate().slice(0,7)+"-01";
+ $("dueDate").value=localDate();
+ $("transactionDate").value=localDate();
+
+ $("loginButton").addEventListener("click",loginGoogle);
+ $("logoutButton").addEventListener("click",logout);
+
+ await checkUser();
+ await loadData();
+
+ db.auth.onAuthStateChange(()=>{
+  setTimeout(async()=>{
+   await checkUser();
+   await loadData();
+  },200);
+ });
+
+ setInterval(loadData,15000);
+}
+start();
+</script>
+</body>
+</html>
