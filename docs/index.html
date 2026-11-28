@@ -307,13 +307,13 @@ function setAdminUI() {
   $("logoutBtn").classList.toggle("hidden", !isAdmin);
   $("adminNotice").classList.toggle("hidden", !isAdmin);
 
-  ["memberForm","duesForm","transactionForm"].forEach(id =>
-    $(id).classList.toggle("hidden", !isAdmin)
-  );
+  $("memberForm").classList.toggle("hidden", !isAdmin);
+  $("duesForm").classList.toggle("hidden", !isAdmin);
+  $("transactionForm").classList.toggle("hidden", !isAdmin);
 
-  document.querySelectorAll(".adminCol").forEach(el =>
-    el.classList.toggle("hidden", !isAdmin)
-  );
+  document.querySelectorAll(".adminCol").forEach(el => {
+    el.classList.toggle("hidden", !isAdmin);
+  });
 }
 
 async function checkUser() {
